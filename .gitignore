@@ -4,7 +4,6 @@
 # Test export directories
 /TV/
 /Movies/
-*.mp4
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm

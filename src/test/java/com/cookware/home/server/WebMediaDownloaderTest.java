@@ -5,9 +5,9 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Unit test for simple WebVideoDownloader.
+ * Unit test for simple WebMediaDownloader.
  */
-public class WebVideoDownloaderTest
+public class WebMediaDownloaderTest
     extends TestCase
 {
     /**
@@ -15,7 +15,7 @@ public class WebVideoDownloaderTest
      *
      * @param testName name of the test case
      */
-    public WebVideoDownloaderTest(String testName )
+    public WebMediaDownloaderTest(String testName )
     {
         super( testName );
     }
@@ -25,7 +25,7 @@ public class WebVideoDownloaderTest
      */
     public static Test suite()
     {
-        return new TestSuite( WebVideoDownloaderTest.class );
+        return new TestSuite( WebMediaDownloaderTest.class );
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.cookware.home.server;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by Kody on 13/08/2017.
@@ -8,10 +9,46 @@ import java.io.File;
 public class Main {
 
     public static void main( String[] args ) {
-        System.out.println("Hello World!");
 
-        WebVideoDownloader primewireDownloader = new WebVideoDownloader();
-        primewireDownloader.newDownload(DownloadType.TV, "https://n3125.thevideo.me:8777/6gjtauqfh6oammfvg6mvktetpmqxa4py45x5pj67f3o5pa2dgblzcfq5paavn3ixgbtme3n5kp4z53vu7ohtdgibkjs56d3d7oexhvzik6y6epc56jfvheotgct6lcjakjcovotatwchfg5ke73btwoghf4zk4skvuzl4cfiijqlswkchgndz5esm7hjsetvril7juw7l7auonx7md6luptgefjw7ewrbzzzkptywebjvlwepwb6yd4uiqlnfkaqmtwodpldcjgeqg43l733433prbnq/v.mp4?direct=false&ua=1&vt=gg4p3ci635fhox3oewfmaiovz5yfzdvsekvzbdrfloohxcpfb64ulqfjxsgli2iox2rpldcdeustag7ddx7iclbh2esepzjwdr6yd6jcekqd6oyfqx5uxwrlceegbdslmpeghsrmh2d2kmpyabqeforjs4sjqx7lm5mcy443kktamtbf7qdg5zwo3cxmiw7zrghbao3oqkgj62bmlebw52djvatsakwviwxa4lj6fmmh7usiefd67yjf5eybfknmv2j3fvx2lb3fkm66xyuhaskniy","GoT.mp4");
+        Scanner consoleScanner = new Scanner(System.in);
+
+//        System.out.print("Select a Movie/TV Show to search: ");
+//        String search = consoleScanner.useDelimiter("\n").next();
+        String search = "Guardians of the Galaxy";
+        search = search.replace(' ', '+');
+
+        WebMediaScraper_Primewire primewireScraper = new WebMediaScraper_Primewire();
+        ArrayList<HttpParameter> httpParameters = new ArrayList<HttpParameter>();
+
+        //httpParameters.add(new HttpParameter("search_keywords","Game+of+Thrones"));
+        httpParameters.add(new HttpParameter("search_keywords",search));
+        Media media = null;
+        try {
+            media = primewireScraper.findMedia("http://www.primewire.ag", httpParameters);
+            System.out.println(media.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        WebMediaBridge_Primewire_TheVideo mediaBridge = new WebMediaBridge_Primewire_TheVideo();
+
+        if(media instanceof TvShow){
+            System.out.println("No bridging of Tv Shows yet");
+            //TODO: Add in bridging of TV Shows
+        }
+        else if (media instanceof Movie){
+            try {
+                String downloadUrl = mediaBridge.getDownloadUrl(media.getLink());
+                System.out.println(downloadUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+//        WebMediaDownloader primewireDownloader = new WebMediaDownloader();
+//        primewireDownloader.newDownload(MediaType.TV, "https://n9715.thevideo.me:8777/o2jtatel3goammfvg7rfae6rgaal2xr5pdrcxsfgdt6mm3jfwktnglp5qjylf623dycg3bc6veh2pbnq2lnoctws4tnfamhsbat4vy3hsuk2nqo76wo54yhwlquc2zupqdgc3ho6tzqx624nzpqwvlgdji46wjoa2xi7gh2bnp4rc3mu657qxfyh7rrwn3qct62qspms2rqm2fem45hlkgs3jiedysfwunivrwkkdeng7gfzp7ylozksbmj2hk2uydfdi4otauzve4wywckpn5i4i6na/v.mp4?direct=false&ua=1&vt=n35lngye3zlwowtngom4aimqdj77zdieuxa6rgov5yoq2vekm5l3ck6l4d36minkoelgww7zhcc5nnwdyr6q4m2fsmsihywietuztgplmkpvddbzi3c7rpwrljn5pl5xkjpsrt6xupcjco2m2v4mp4lazc4mekgyvzv45bhhspcvlcifegk5vuhfvqldrcrabf4pdwib3lgd4jxangqkm66e37siololvc23zfkftegabv67ugpftdyglejflwdukexetwjxdfzm4zhtdo4r3ul5va","The Bone Collector.mp4");
 
     }
 

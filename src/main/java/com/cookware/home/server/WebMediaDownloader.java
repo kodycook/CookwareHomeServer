@@ -16,27 +16,27 @@ import java.util.concurrent.TimeUnit;
  * Hello world!
  *
  */
-public class WebVideoDownloader
+public class WebMediaDownloader
 {
     String moviePath;
     String tvPath;
 
-    public WebVideoDownloader(){
+    public WebMediaDownloader(){
         this.moviePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Movies";
         this.tvPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\TV";
     }
 
-    public WebVideoDownloader(String mTvPath, String mMoviePath){
+    public WebMediaDownloader(String mTvPath, String mMoviePath){
         this.moviePath = mMoviePath;
         this.tvPath = mTvPath;
     }
 
-    public void newDownload(DownloadType type, String downloadUrl, String downloadFilename){
+    public void newDownload(MediaType type, String downloadUrl, String downloadFilename){
         String downloadFilepath = "";
-        if(type == DownloadType.MOVIE) {
+        if(type == MediaType.MOVIE) {
             downloadFilepath = this.moviePath;
         }
-        else if(type == DownloadType.TV){
+        else if(type == MediaType.TV){
             downloadFilepath = this.tvPath;
         }
         File output = new File(downloadFilepath, downloadFilename);
