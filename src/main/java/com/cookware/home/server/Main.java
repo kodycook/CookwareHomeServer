@@ -38,7 +38,7 @@ public class Main {
         }
         else if (media instanceof Movie){
             try {
-                String downloadUrl = mediaBridge.getDownloadUrl(media.getLink());
+                String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", media.getLink());
                 System.out.println(downloadUrl);
             } catch (Exception e) {
                 e.printStackTrace();
