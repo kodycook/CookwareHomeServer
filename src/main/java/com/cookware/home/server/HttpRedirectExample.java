@@ -107,6 +107,14 @@ public class HttpRedirectExample {
             conn.addRequestProperty("User-Agent", "Mozilla");
             conn.addRequestProperty("Referer", "google.com");
 
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+            conn.setRequestProperty("op" ,"download1");
+            conn.setRequestProperty("id" ,"bnrfiudhjxsv");
+            conn.setRequestProperty("fname" ,"Guardians.of.the.Galaxy.2014.720p.BluRay.x264.YIFY.mp4");
+            conn.setRequestProperty("referer" ,"https://tvad.me/bnrfiudhjxsv");
+            conn.setRequestProperty("inhu" ,"foff");
+
 
 
             conn.addRequestProperty("hash", hash);
