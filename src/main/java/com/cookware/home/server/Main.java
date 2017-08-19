@@ -9,42 +9,47 @@ import java.util.Scanner;
 public class Main {
 
     public static void main( String[] args ) {
+//
+//        Scanner consoleScanner = new Scanner(System.in);
+//
+////        System.out.print("Select a Movie/TV Show to search: ");
+////        String search = consoleScanner.useDelimiter("\n").next();
+//        String search = "Guardians of the Galaxy";
+//        search = search.replace(' ', '+');
+//
+//        WebMediaScraper_Primewire primewireScraper = new WebMediaScraper_Primewire();
+//        ArrayList<HttpParameter> httpParameters = new ArrayList<HttpParameter>();
+//
+//        //httpParameters.add(new HttpParameter("search_keywords","Game+of+Thrones"));
+//        httpParameters.add(new HttpParameter("search_keywords",search));
+//        Media media = null;
+//        try {
+//            media = primewireScraper.findMedia("http://www.primewire.ag", httpParameters);
+////            System.out.println(media.toString());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+        WebMediaBridge_Primewire_TheVideo mediaBridge = new WebMediaBridge_Primewire_TheVideo();
+//
+//        if(media instanceof TvShow){
+//            System.out.println("No bridging of Tv Shows yet");
+//            //TODO: Add in bridging of TV Shows
+//        }
+//        else if (media instanceof Movie){
+//            try {
+//                String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", media.getLink());
+//                System.out.println(downloadUrl);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
 
-        Scanner consoleScanner = new Scanner(System.in);
-
-//        System.out.print("Select a Movie/TV Show to search: ");
-//        String search = consoleScanner.useDelimiter("\n").next();
-        String search = "Guardians of the Galaxy";
-        search = search.replace(' ', '+');
-
-        WebMediaScraper_Primewire primewireScraper = new WebMediaScraper_Primewire();
-        ArrayList<HttpParameter> httpParameters = new ArrayList<HttpParameter>();
-
-        //httpParameters.add(new HttpParameter("search_keywords","Game+of+Thrones"));
-        httpParameters.add(new HttpParameter("search_keywords",search));
-        Media media = null;
         try {
-            media = primewireScraper.findMedia("http://www.primewire.ag", httpParameters);
-            System.out.println(media.toString());
+            String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", "");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        WebMediaBridge_Primewire_TheVideo mediaBridge = new WebMediaBridge_Primewire_TheVideo();
-
-        if(media instanceof TvShow){
-            System.out.println("No bridging of Tv Shows yet");
-            //TODO: Add in bridging of TV Shows
-        }
-        else if (media instanceof Movie){
-            try {
-                String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", media.getLink());
-                System.out.println(downloadUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
 
 
 //        WebMediaDownloader primewireDownloader = new WebMediaDownloader();
