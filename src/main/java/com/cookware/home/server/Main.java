@@ -3,53 +3,44 @@ package com.cookware.home.server;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
+
 /**
  * Created by Kody on 13/08/2017.
  */
 public class Main {
+    private static AutomateLevel automate = AutomateLevel.SKIP_SCRAPE;
 
     public static void main( String[] args ) {
-//
-//        Scanner consoleScanner = new Scanner(System.in);
-//
-////        System.out.print("Select a Movie/TV Show to search: ");
-////        String search = consoleScanner.useDelimiter("\n").next();
-//        String search = "Guardians of the Galaxy";
-//        search = search.replace(' ', '+');
-//
-//        WebMediaScraper_Primewire primewireScraper = new WebMediaScraper_Primewire();
-//        ArrayList<HttpParameter> httpParameters = new ArrayList<HttpParameter>();
-//
-//        //httpParameters.add(new HttpParameter("search_keywords","Game+of+Thrones"));
-//        httpParameters.add(new HttpParameter("search_keywords",search));
-//        Media media = null;
-//        try {
-//            media = primewireScraper.findMedia("http://www.primewire.ag", httpParameters);
-////            System.out.println(media.toString());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-        WebMediaBridge_Primewire_TheVideo mediaBridge = new WebMediaBridge_Primewire_TheVideo();
-//
-//        if(media instanceof TvShow){
-//            System.out.println("No bridging of Tv Shows yet");
-//            //TODO: Add in bridging of TV Shows
-//        }
-//        else if (media instanceof Movie){
-//            try {
-//                String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", media.getLink());
-//                System.out.println(downloadUrl);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        String baseUrl = "http://www.primewire.ag";
 
-        try {
-            String downloadUrl = mediaBridge.getDownloadUrl("http://www.primewire.ag", "");
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        WebMediaBridge mediaBridge = new WebMediaBridge();
+        if(automate == AutomateLevel.SKIP_SCRAPE){
+            try {
+                String downloadUrl = mediaBridge.getDownloadUrl(baseUrl, "http://www.primewire.ag/watch-2749527-Guardians-of-the-Galaxy-online-free");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            String search = getSearchQuery();
+
+            Media media = scrapeMediaFromSearch(search, baseUrl);
+
+            if(media instanceof TvShow){
+                System.out.println("No bridging of Tv Shows yet");
+                //TODO: Add in bridging of TV Shows
+            }
+            else if (media instanceof Movie) {
+                bridgeMediaToDownloadUrl(mediaBridge, baseUrl, media.getLink());
+            }
         }
+
+
+
+//
+
+
 
 
 //        WebMediaDownloader primewireDownloader = new WebMediaDownloader();
@@ -57,4 +48,43 @@ public class Main {
 
     }
 
+    private static String getSearchQuery() {
+        String search;
+        if (automate == AutomateLevel.NONE) {
+            Scanner consoleScanner = new Scanner(System.in);
+            System.out.print("Select a Movie/TV Show to search: ");
+            search = consoleScanner.useDelimiter("\n").next();
+        } else {
+            search = "Guardians of the Galaxy";
+            //search = "Game of Thrones";
+        }
+        search = search.replace(' ', '+');
+
+        return search;
+    }
+
+    private static Media scrapeMediaFromSearch(String search, String baseUrl) {
+        WebMediaScraper primewireScraper = new WebMediaScraper();
+        ArrayList<HttpParameter> httpParameters = new ArrayList<HttpParameter>();
+
+        httpParameters.add(new HttpParameter("search_keywords", search));
+        Media media = null;
+        try {
+            media = primewireScraper.findMedia(baseUrl, httpParameters);
+//            System.out.println(media.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return media;
+    }
+
+    private static String bridgeMediaToDownloadUrl(WebMediaBridge mediaBridge, String baseUrl, String mediaUrl){
+        try {
+            String downloadUrl = mediaBridge.getDownloadUrl(baseUrl, mediaUrl);
+            System.out.println(downloadUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Nothing implemented here yet";
+    }
 }

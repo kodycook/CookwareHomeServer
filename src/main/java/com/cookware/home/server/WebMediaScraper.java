@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
-public class WebMediaScraper_Primewire {
+public class WebMediaScraper {
 
-    public WebMediaScraper_Primewire() {
+    public WebMediaScraper() {
 
     }
 

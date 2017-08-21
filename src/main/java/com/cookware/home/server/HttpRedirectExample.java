@@ -7,6 +7,8 @@ import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -19,8 +21,9 @@ public class HttpRedirectExample {
 
 
     public String redirect() {
-        try {
 
+        CookieHandler.setDefault(new CookieManager());
+        try {
 //            String url = "http://www.twitter.com";
 
             URL obj = new URL(url);
@@ -80,67 +83,38 @@ public class HttpRedirectExample {
 
             String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
 
-            System.out.println(hash);
 
+//******************************************************************************************************************
 
+//            String cookies = conn.getHeaderField("Set-Cookie");
+//
+//            HttpURLConnection conn2 = (HttpURLConnection) new URL(newUrl).openConnection();
+//            conn2.setRequestMethod("POST");
+//            conn2.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+//            conn2.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36");
+//            conn2.addRequestProperty("_vhash","i1102394cE");
+//            conn2.addRequestProperty("gfk","i22abd2449");
+//            conn2.addRequestProperty("hash",hash);
+//            conn2.addRequestProperty("inhu","foff");
+//
+//            System.out.println(conn2.getRequestProperties().toString());
+//
+//            System.out.println(conn2.getResponseCode());
+//
+//            BufferedReader in2 = new BufferedReader(
+//                    new InputStreamReader(conn2.getInputStream()));
+//            String inputLine2;
+//            StringBuffer html2 = new StringBuffer();
+//
+//            while ((inputLine2 = in2.readLine()) != null) {
+//                html2.append(inputLine2);
+//            }
+//
+//            in2.close();
+//
+//            System.out.println(html2);
 
-
-
-
-
-
-
-
-
-            // get redirect url from "location" header field
-            String newUrl2 = newUrl;
-
-            // get the cookie if need, for login
-            String cookies2 = conn.getHeaderField("Set-Cookie");
-
-            System.out.println(newUrl2);
-
-            // open the new connnection again
-            conn = (HttpURLConnection) new URL(newUrl2).openConnection();
-            conn.setRequestProperty("Cookie", cookies2);
-            conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-            conn.addRequestProperty("User-Agent", "Mozilla");
-            conn.addRequestProperty("Referer", "google.com");
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-            conn.setRequestProperty("op" ,"download1");
-            conn.setRequestProperty("id" ,"bnrfiudhjxsv");
-            conn.setRequestProperty("fname" ,"Guardians.of.the.Galaxy.2014.720p.BluRay.x264.YIFY.mp4");
-            conn.setRequestProperty("referer" ,"https://tvad.me/bnrfiudhjxsv");
-            conn.setRequestProperty("inhu" ,"foff");
-
-
-
-            conn.addRequestProperty("hash", hash);
-            conn.setRequestMethod("POST");
-
-
-            System.out.println("Redirect to URL number 2 : " + newUrl2);
-
-            BufferedReader in2 = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
-            String inputLine2;
-            StringBuffer html2 = new StringBuffer();
-
-            while ((inputLine2 = in2.readLine()) != null) {
-                html2.append(inputLine2);
-            }
-
-            in2.close();
-
-
-            System.out.println(html2.toString());
-//            return html.toString();
-
-
-
-
+//******************************************************************************************************************
 
 
             return newUrl;
