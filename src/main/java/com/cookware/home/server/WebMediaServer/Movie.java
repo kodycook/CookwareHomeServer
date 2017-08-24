@@ -1,4 +1,4 @@
-package com.cookware.home.server;
+package com.cookware.home.server.WebMediaServer;
 
 /**
  * Created by Kody on 13/08/2017.

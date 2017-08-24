@@ -1,4 +1,4 @@
-package com.cookware.home.server;
+package com.cookware.home.server.WebMediaServer;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

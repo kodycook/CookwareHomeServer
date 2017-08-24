@@ -1,4 +1,4 @@
-package com.cookware.home.server;
+package com.cookware.home.server.WebMediaServer;
 
 import java.util.ArrayList;
 import java.util.Scanner;

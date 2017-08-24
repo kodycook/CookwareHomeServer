@@ -1,4 +1,4 @@
-package com.cookware.home.server;
+package com.cookware.home.server.WebMediaServer;
 
 import java.util.ArrayList;
 
@@ -48,6 +48,10 @@ public class TvShow extends Media{
             return this.episodes.get(this.episodes.size()-1);
         }
 
+        public ArrayList<TvShow.Episode> getEpisodes(){
+            return this.episodes;
+        }
+
         public String toString(){
             String output = String.format("\t%s\n", this.name);
             for (Episode episode : episodes) {
@@ -57,7 +61,7 @@ public class TvShow extends Media{
         }
     }
 
-    public class Episode {
+    public class Episode extends Media{
         String name;
         int seasonNumber;
         int episodeNumber;
@@ -68,6 +72,7 @@ public class TvShow extends Media{
 //        date dateDownloaded;
 
         public Episode(String mName, int mSeasonNumber, int mEpisodeNumber){
+            super();
             this.name = mName;
             this.seasonNumber = mSeasonNumber;
             this.episodeNumber = mEpisodeNumber;
