@@ -76,14 +76,49 @@ public class WebMediaBridge {
 
 
     public String extractMediaUrl(String url){
+
+        String firstPage = getWebpage(url, HttpRequestType.GET, "");
+        Document document = Jsoup.parse(firstPage);
+        String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
+
+        String secondPage = getWebpage(url, HttpRequestType.POST, hash);
+        System.out.println(secondPage);
+
+        return "";
+    }
+
+    private String getWebpage(String url, HttpRequestType type, String hash){
         try {
+
             URL obj = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
             conn.setReadTimeout(5000);
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
             conn.addRequestProperty("User-Agent", "Mozilla");
             conn.addRequestProperty("Referer", "google.com");
+            conn.addRequestProperty("Referer", url);
 
+            if(type.equals(HttpRequestType.POST)){
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                params.add(new BasicNameValuePair("_vhash", "i1102394cE"));
+                params.add(new BasicNameValuePair("gfk", "i22abd2449"));
+                params.add(new BasicNameValuePair("hash", hash));
+                params.add(new BasicNameValuePair("inhu", "foff"));
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getQuery(params));
+                writer.flush();
+                writer.close();
+                os.close();
+
+                conn.connect();
+            }
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(conn.getInputStream()));
@@ -96,71 +131,12 @@ public class WebMediaBridge {
 
             in.close();
 
-            Document document = Jsoup.parse(html.toString());
-
-            String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
-
-            System.out.println(hash);
-
-            String cookies = conn.getHeaderField("Set-Cookie");
-
-            HttpURLConnection conn2 = (HttpURLConnection) new URL(url).openConnection();
-            conn2.setRequestMethod("POST");
-            conn2.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-            conn2.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36");
-            conn2.addRequestProperty("Referer", url);
-            conn2.setDoInput(true);
-            conn2.setDoOutput(true);
-
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
-            params.add(new BasicNameValuePair("_vhash", "i1102394cE"));
-            params.add(new BasicNameValuePair("gfk", "i22abd2449"));
-            params.add(new BasicNameValuePair("hash", hash));
-            params.add(new BasicNameValuePair("inhu", "foff"));
-
-            OutputStream os = conn2.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(os, "UTF-8"));
-            writer.write(getQuery(params));
-            writer.flush();
-            writer.close();
-            os.close();
-
-            conn2.connect();
-
-
-//            System.out.println(conn2.getRequestProperties().toString());
-
-            System.out.println(conn2.getResponseCode());
-
-            BufferedReader in2 = new BufferedReader(
-                    new InputStreamReader(conn2.getInputStream()));
-            String inputLine2;
-            StringBuffer html2 = new StringBuffer();
-
-            while ((inputLine2 = in2.readLine()) != null) {
-                html2.append(inputLine2);
-            }
-
-            in2.close();
-
-            System.out.println(html2);
-
+            return html.toString();
 
         } catch (Exception e) {
             e.printStackTrace();
-
-
             return null;
         }
-
-        return "";
-    }
-
-    private String getWebpage(String url, HttpRequestType type){
-
-
-        return "";
     }
 
     private String getQuery(List<NameValuePair> params) throws UnsupportedEncodingException
