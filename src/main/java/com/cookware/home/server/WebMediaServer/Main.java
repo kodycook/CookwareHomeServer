@@ -9,16 +9,18 @@ import java.util.Scanner;
  * Created by Kody on 13/08/2017.
  */
 public class Main {
-    private static AutomateLevel automate = AutomateLevel.SKIP_SCRAPE;
+    private static AutomateLevel automate = AutomateLevel.NONE;
 
     public static void main( String[] args ) {
         String baseUrl = "http://www.primewire.ag";
 
-
         WebMediaBridge mediaBridge = new WebMediaBridge();
+        DownloadScheduler scheduler = new DownloadScheduler();
+        scheduler.start();
+        String downloadUrl = "";
         if(automate == AutomateLevel.SKIP_SCRAPE){
             try {
-                String downloadUrl = mediaBridge.getDownloadUrl(baseUrl, "http://www.primewire.ag/watch-2749527-Guardians-of-the-Galaxy-online-free");
+                downloadUrl = mediaBridge.getDownloadUrl(baseUrl, "http://www.primewire.ag/watch-2749527-Guardians-of-the-Galaxy-online-free");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -32,9 +34,10 @@ public class Main {
                 //TODO: Add in bridging of TV Shows
             }
             else if (media instanceof Movie) {
-                bridgeMediaToDownloadUrl(mediaBridge, baseUrl, media.getLink());
+                downloadUrl = bridgeMediaToDownloadUrl(mediaBridge, baseUrl, media.getLink());
             }
         }
+
 
 
 
@@ -79,12 +82,12 @@ public class Main {
     }
 
     private static String bridgeMediaToDownloadUrl(WebMediaBridge mediaBridge, String baseUrl, String mediaUrl){
+        String downloadUrl = "";
         try {
-            String downloadUrl = mediaBridge.getDownloadUrl(baseUrl, mediaUrl);
-            System.out.println(downloadUrl);
+            downloadUrl = mediaBridge.getDownloadUrl(baseUrl, mediaUrl);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "Nothing implemented here yet";
+        return downloadUrl;
     }
 }

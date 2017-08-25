@@ -12,6 +12,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * Created by Kody on 13/08/2017.
@@ -67,11 +68,10 @@ public class WebMediaBridge {
         }
 
         String redirectedUrl = new HttpRedirect(url).redirect();
-        System.out.println(redirectedUrl);
 
         String mediaUrl = extractMediaUrl(redirectedUrl);
 
-        return "Nothing here yet";
+        return mediaUrl;
     }
 
 
@@ -82,9 +82,34 @@ public class WebMediaBridge {
         String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
 
         String secondPage = getWebpage(url, HttpRequestType.POST, hash);
-        System.out.println(secondPage);
+        int startOfLinksInWebPage = secondPage.indexOf("sources: [");
 
-        return "";
+        Scanner scan = new Scanner(secondPage.substring(startOfLinksInWebPage+11));
+        scan.useDelimiter(Pattern.compile("}]"));
+        String logicalLine = scan.next();
+        String[] rawMediaSources = logicalLine.split("\\},\\{");
+
+        ArrayList<DownloadLink> mediaLinks = new ArrayList<DownloadLink>();
+        for (String source:rawMediaSources){
+            String[] rawSeperatedValues = source.split("\"");
+            try{
+                String downloadUrl = rawSeperatedValues[3];
+                int quality = Integer.parseInt(rawSeperatedValues[7].replaceAll("[^0-9]", ""));
+                mediaLinks.add(new DownloadLink(downloadUrl, quality));
+            } catch (Exception e){
+                System.out.println("Seperation of download links failed");
+            }
+        }
+
+        int bestQuality = 0;
+        String result = "";
+        for (DownloadLink mediaLink:mediaLinks){
+//            System.out.println(mediaLink.toString());
+            if(bestQuality < mediaLink.quality){
+                result = mediaLink.url;
+            }
+        }
+        return result;
     }
 
     private String getWebpage(String url, HttpRequestType type, String hash){
@@ -157,5 +182,19 @@ public class WebMediaBridge {
         }
 
         return result.toString();
+    }
+
+    public class DownloadLink{
+        public String url;
+        public int quality;
+
+        private DownloadLink(String mUrl, int mQuality){
+            this.url = mUrl;
+            this.quality = mQuality;
+        }
+
+        public String toString(){
+            return String.format("(%dp) %s",this.quality, this.url);
+        }
     }
 }

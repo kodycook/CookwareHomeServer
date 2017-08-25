@@ -5,28 +5,47 @@ import java.util.ArrayList;
 /**
  * Created by Kody on 21/08/2017.
  */
-public class DownloadScheduler {
+public class DownloadScheduler implements Runnable {
     private ArrayList<Download> downloadQueue;
     private Download currentDownload;
     private SchedulerState state;
-
+    private Thread t;
 
     public DownloadScheduler(){
-
     }
 
-    public void Start(){
+    public void run(){
+        System.out.println("Running Scheduer");
         this.state = SchedulerState.RUNNING;
-        while((downloadQueue.size() > 0) && this.state.equals(SchedulerState.RUNNING)) {
-            this.currentDownload = downloadQueue.get(0);
+        try {
+            while(true) {
+                while ((downloadQueue.size() > 0) && this.state.equals(SchedulerState.RUNNING)) {
+                    this.currentDownload = downloadQueue.get(0);
 
-            //TODO: Add code here to create the media bridge and download file
+                    //TODO: Add code here to create the media bridge and download file
 
-//            if(success){
-            downloadQueue.remove(0);
-//            parent file change state to success
-//          } else {
-//          }
+                    //            if(success){
+                    downloadQueue.remove(0);
+                    //            parent file change state to success
+                    //          } else {
+                    //          }
+                }
+                Thread.sleep(1000);
+            }
+        }catch (InterruptedException e) {
+            System.out.println("Scheduler Interrupted.");
+            this.state = SchedulerState.STOPPED;
+
+        }
+        System.out.println("Scheduler Exiting.");
+        this.state = SchedulerState.STOPPED;
+    }
+
+    public void start () {
+        System.out.println("Starting Scheduer");
+        if (t == null) {
+            t = new Thread(this);
+            t.start ();
         }
     }
 
