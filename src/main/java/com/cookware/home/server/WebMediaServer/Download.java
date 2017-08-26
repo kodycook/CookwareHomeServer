@@ -8,12 +8,18 @@ public class Download {
     private DownloadState state;
     private String url;
     private int priority;
+    private MediaType type;
 
-    public Download(String mName, String mUrl, int mPriority){
+    public Download(String mName, String mUrl, MediaType mType, int mPriority){
         this.name = mName;
         this.priority = mPriority;
         this.url = mUrl;
+        this.type = mType;
         this.state = DownloadState.QUEUED;
+    }
+
+    public String getName(){
+        return this.name;
     }
 
     public int getPriority(){
@@ -26,6 +32,14 @@ public class Download {
 
     public void setState(DownloadState newState){
         this.state = newState;
+    }
+
+    public String getUrl(){
+        return this.url;
+    }
+
+    public MediaType getType(){
+        return this.type;
     }
 
     public String toString(){

@@ -12,30 +12,39 @@ public class DownloadScheduler implements Runnable {
     private Thread t;
 
     public DownloadScheduler(){
+        this.downloadQueue = new ArrayList<Download>();
     }
 
     public void run(){
         System.out.println("Running Scheduer");
         this.state = SchedulerState.RUNNING;
+        WebMediaDownloader mediaDownloader = new WebMediaDownloader();
         try {
             while(true) {
-                while ((downloadQueue.size() > 0) && this.state.equals(SchedulerState.RUNNING)) {
-                    this.currentDownload = downloadQueue.get(0);
+                    for(Download currentDownload:this.downloadQueue) {
+                        if(this.state.equals(SchedulerState.RUNNING)) {
+                            if(currentDownload.getState().equals(DownloadState.QUEUED)){
+                                // TODO: Get rid of the hardcoded string on the line below
+                                String downloadUrl = new WebMediaBridge().getDownloadUrl("http://www.primewire.ag", currentDownload.getUrl());
+                                mediaDownloader.newDownload(currentDownload.getType(), downloadUrl, currentDownload.getName());
 
-                    //TODO: Add code here to create the media bridge and download file
+                            }
 
-                    //            if(success){
-                    downloadQueue.remove(0);
-                    //            parent file change state to success
-                    //          } else {
-                    //          }
-                }
-                Thread.sleep(1000);
+//                            this.
+//
+//                                    //            if(success){
+//                                            downloadQueue.remove(0);
+                            //            parent file change state to success
+                            //          } else {
+                            //          }
+                        }
+//                        Thread.sleep(1000);
+                    }
             }
-        }catch (InterruptedException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Scheduler Interrupted.");
             this.state = SchedulerState.STOPPED;
-
         }
         System.out.println("Scheduler Exiting.");
         this.state = SchedulerState.STOPPED;
@@ -52,7 +61,7 @@ public class DownloadScheduler implements Runnable {
     public void addMedia(Media media){
         if(media instanceof Movie){
             if(media.getState().equals(DownloadState.PENDING)){
-                addDownloadToQueue(new Download(media.getName(), media.getLink(), media.getPriority()));
+                addDownloadToQueue(new Download(media.getName(), media.getLink(), MediaType.MOVIE, media.getPriority()));
             }
         }
         else if (media instanceof TvShow) {
@@ -69,7 +78,7 @@ public class DownloadScheduler implements Runnable {
             for(TvShow.Episode episode : season.getEpisodes()){
                 EpisodeNumberCount ++;
                 if(episode.getState().equals(DownloadState.PENDING)){
-                    addDownloadToQueue(new Download(episode.getName(), episode.getLink(), episode.getPriority()));
+                    addDownloadToQueue(new Download(episode.getName(), episode.getLink(), MediaType.TV, episode.getPriority()));
                     episode.setState(DownloadState.QUEUED);
                 }
             }

@@ -18,23 +18,21 @@ public class Main {
         DownloadScheduler scheduler = new DownloadScheduler();
         scheduler.start();
         String downloadUrl = "";
-        if(automate == AutomateLevel.SKIP_SCRAPE){
-            try {
-                downloadUrl = mediaBridge.getDownloadUrl(baseUrl, "http://www.primewire.ag/watch-2749527-Guardians-of-the-Galaxy-online-free");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            String search = getSearchQuery();
 
-            Media media = scrapeMediaFromSearch(search, baseUrl);
+        while(true) {
+            if (automate == AutomateLevel.SKIP_SCRAPE) {
+                try {
+                    // TODO: Udate this automatic method to automate selection (maybe even remove it
+                    downloadUrl = mediaBridge.getDownloadUrl(baseUrl, "http://www.primewire.ag/watch-2749527-Guardians-of-the-Galaxy-online-free");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                String search = getSearchQuery();
 
-            if(media instanceof TvShow){
-                System.out.println("No bridging of Tv Shows yet");
-                //TODO: Add in bridging of TV Shows
-            }
-            else if (media instanceof Movie) {
-                downloadUrl = bridgeMediaToDownloadUrl(mediaBridge, baseUrl, media.getLink());
+                Media media = scrapeMediaFromSearch(search, baseUrl);
+
+                scheduler.addMedia(media);
             }
         }
 
@@ -79,15 +77,5 @@ public class Main {
             e.printStackTrace();
         }
         return media;
-    }
-
-    private static String bridgeMediaToDownloadUrl(WebMediaBridge mediaBridge, String baseUrl, String mediaUrl){
-        String downloadUrl = "";
-        try {
-            downloadUrl = mediaBridge.getDownloadUrl(baseUrl, mediaUrl);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return downloadUrl;
     }
 }
