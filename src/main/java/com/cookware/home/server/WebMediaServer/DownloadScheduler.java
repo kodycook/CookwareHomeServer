@@ -7,7 +7,6 @@ import java.util.ArrayList;
  */
 public class DownloadScheduler implements Runnable {
     private ArrayList<Download> downloadQueue;
-    private Download currentDownload;
     private SchedulerState state;
     private Thread t;
 
@@ -18,36 +17,29 @@ public class DownloadScheduler implements Runnable {
     public void run(){
         System.out.println("Running Scheduer");
         this.state = SchedulerState.RUNNING;
-        WebMediaDownloader mediaDownloader = new WebMediaDownloader();
-        try {
-            while(true) {
-                    for(Download currentDownload:this.downloadQueue) {
-                        if(this.state.equals(SchedulerState.RUNNING)) {
-                            if(currentDownload.getState().equals(DownloadState.QUEUED)){
-                                // TODO: Get rid of the hardcoded string on the line below
-                                String downloadUrl = new WebMediaBridge().getDownloadUrl("http://www.primewire.ag", currentDownload.getUrl());
-                                mediaDownloader.newDownload(currentDownload.getType(), downloadUrl, currentDownload.getName());
-
-                            }
-
-//                            this.
-//
-//                                    //            if(success){
-//                                            downloadQueue.remove(0);
-                            //            parent file change state to success
-                            //          } else {
-                            //          }
-                        }
-//                        Thread.sleep(1000);
+            for (Download currentDownload : this.downloadQueue) {
+                if (this.state.equals(SchedulerState.RUNNING)) {
+                    if (currentDownload.getState().equals(DownloadState.QUEUED)) {
+                        download();
+                        // TODO: Get rid of the hardcoded string on the line below
                     }
+                }
+//                        Thread.sleep(1000);
             }
+        System.out.println("Scheduler Exiting.");
+        this.state = SchedulerState.STOPPED;
+    }
+
+    public void download(){
+        Download currentDownload = downloadQueue.get(0);
+        try {
+            String downloadUrl = new WebMediaBridge().getDownloadUrl("http://www.primewire.ag", currentDownload.getUrl());
+            new WebMediaDownloader().newDownload(currentDownload.getType(), downloadUrl, currentDownload.getName());
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Scheduler Interrupted.");
             this.state = SchedulerState.STOPPED;
         }
-        System.out.println("Scheduler Exiting.");
-        this.state = SchedulerState.STOPPED;
     }
 
     public void start () {
@@ -91,10 +83,10 @@ public class DownloadScheduler implements Runnable {
 
     public void downloadComplete(){
         for(Download download: this.downloadQueue) {
-            if (download.equals(currentDownload)) {
-                download.setState(DownloadState.FINISHED);
-                break;
-            }
+//            if (download.equals(currentDownload)) {
+//                download.setState(DownloadState.FINISHED);
+//                break;
+//            }
         }
 
         refreshQueue();

@@ -1,5 +1,7 @@
 package com.cookware.home.server.WebMediaServer;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -12,11 +14,13 @@ public class Main {
     private static AutomateLevel automate = AutomateLevel.NONE;
 
     public static void main( String[] args ) {
+        CookieHandler.setDefault(new CookieManager());
+
         String baseUrl = "http://www.primewire.ag";
 
         WebMediaBridge mediaBridge = new WebMediaBridge();
         DownloadScheduler scheduler = new DownloadScheduler();
-        scheduler.start();
+//        scheduler.start();
         String downloadUrl = "";
 
         while(true) {
@@ -33,6 +37,8 @@ public class Main {
                 Media media = scrapeMediaFromSearch(search, baseUrl);
 
                 scheduler.addMedia(media);
+
+                scheduler.download();
             }
         }
 

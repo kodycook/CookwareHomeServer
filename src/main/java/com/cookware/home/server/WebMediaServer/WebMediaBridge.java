@@ -29,8 +29,6 @@ public class WebMediaBridge {
         this.baseUrl = mBaseUrl;
         String charset = "UTF-8";
 
-        CookieHandler.setDefault(new CookieManager());
-
         URLConnection connection = new URL(mInUrl).openConnection();
         connection.setRequestProperty("Accept-Charset", charset);
         InputStream response = connection.getInputStream();
@@ -109,6 +107,20 @@ public class WebMediaBridge {
                 result = mediaLink.url;
             }
         }
+
+        int startOfUrlCodeInWebPage = secondPage.indexOf("lets_play_a_game='");
+
+
+        scan = new Scanner(secondPage.substring(startOfUrlCodeInWebPage+"lets_play_a_game='".length()));
+        scan.useDelimiter(Pattern.compile("'"));
+        logicalLine = scan.next();
+
+        String thirdPage = getWebpage("https://thevideo.me/vsign/player/"+logicalLine, HttpRequestType.GET, "");
+
+        String[] encodedAttributes = thirdPage.split("\\|");
+
+        result = result + "?direct=false&ua=1&vt=" + encodedAttributes[23];
+
         return result;
     }
 
