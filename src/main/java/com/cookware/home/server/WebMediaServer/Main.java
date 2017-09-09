@@ -14,7 +14,6 @@ public class Main {
     private static AutomateLevel automate = AutomateLevel.NONE;
 
     public static void main( String[] args ) {
-        CookieHandler.setDefault(new CookieManager());
 
         String baseUrl = "http://www.primewire.ag";
 

@@ -55,7 +55,11 @@ public class WebMediaBridge {
         String url = "";
         for (Element matchedLink : matchedLinks) {
             if(matchedLink.hasAttr("class")) {
-                site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
+                site = "";
+                try{
+                    site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
+                }catch(Exception e){
+                }
 //                System.out.println(String.format("Op %d: %s", i, site));
                 if(site.equals("thevideo.me")){
                     url = this.baseUrl + matchedLink.getElementsByAttribute("href").attr("href");
@@ -105,6 +109,7 @@ public class WebMediaBridge {
 //            System.out.println(mediaLink.toString());
             if(bestQuality < mediaLink.quality){
                 result = mediaLink.url;
+                bestQuality = mediaLink.quality;
             }
         }
 
@@ -119,7 +124,15 @@ public class WebMediaBridge {
 
         String[] encodedAttributes = thirdPage.split("\\|");
 
-        result = result + "?direct=false&ua=1&vt=" + encodedAttributes[23];
+        String encodedHash = "";
+        for (String temp:encodedAttributes){
+            if(temp.length()==282){
+                encodedHash = temp;
+                break;
+            }
+        }
+
+        result = result + "?direct=false&ua=1&vt=" + encodedHash;
 
         return result;
     }
