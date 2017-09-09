@@ -1,12 +1,15 @@
 package com.cookware.home.server.WebMediaServer;
 
+import com.cookware.home.server.WebMediaServer.DownloadState;
+import com.cookware.home.server.WebMediaServer.MediaType;
+
 /**
  * Created by Kody on 13/08/2017.
  */
 public class Media {
     protected  String name;
-    protected  MediaType type;
-    protected  DownloadState state;
+    protected MediaType type;
+    protected DownloadState state;
     protected  String primewireUrl;
     protected int priority;
 

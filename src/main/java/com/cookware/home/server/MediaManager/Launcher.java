@@ -1,4 +1,4 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
 import org.apache.log4j.*;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -13,13 +13,14 @@ import java.io.PrintStream;
 public class Launcher {
     static Logger log;
     static PrintStream consoleStream;
+    final static String logPropertiesPath = "src\\main\\java\\com\\cookware\\home\\server\\MediaManager\\log4j.xml";
 
 
     public static void main( String[] args ) {
         log = Logger.getLogger(Launcher.class.getName());
 
 //        hideConsole();
-        DOMConfigurator.configure("src\\main\\java\\MediaManager\\log4j.xml");
+        DOMConfigurator.configure(logPropertiesPath);
 
 
         MediaManager mediaManager = new MediaManager();

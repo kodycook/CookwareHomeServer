@@ -1,11 +1,14 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
 import org.apache.log4j.Logger;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * Created by Kody on 8/09/2017.
@@ -62,7 +65,7 @@ public class DataBaseManager {
         this.log.info("Successfully opened database");
     }
 
-    public void addMedia(int id, String name, String url, int quality, int state, int priority, String released, String added) {
+    public void addMedia(BigInteger id, String name, String url, int quality, int state, int priority, LocalDate released, LocalDate added) {
         Connection connection = null;
         Statement stmt = null;
 
@@ -73,7 +76,7 @@ public class DataBaseManager {
 
             stmt = connection.createStatement();
             String sql = String.format("INSERT INTO MEDIA (ID,NAME,URL,QUALITY,STATE,PRIORITY,RELEASED, ADDED) " +
-                    "VALUES (%d, '%s', '%s', %d, %d, %d, '%s', '%s');",id, name, url, quality, state, priority, released, added);
+                    "VALUES (%d, '%s', '%s', %d, %d, %d, '%s', '%s');",id, name, url, quality, state, priority, java.sql.Date.valueOf(released), java.sql.Date.valueOf(added));
             log.info(String.format("SQL Query sent to database: %s",sql));
             stmt.executeUpdate(sql);
 

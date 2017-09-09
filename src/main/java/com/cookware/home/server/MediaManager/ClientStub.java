@@ -1,6 +1,5 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
-import com.cookware.home.server.WebMediaServer.AutomateLevel;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -143,7 +142,8 @@ public class ClientStub extends Thread{
     }
 
     public void sendUrlToManager(String url) {
-        System.out.println(url);
+
+        log.info("Sending request to local Media Manager Server");
 
         HttpClient httpclient = HttpClients.createDefault();
         HttpPost httppost = new HttpPost("http://localhost:9000/echoPost");
@@ -180,6 +180,7 @@ public class ClientStub extends Thread{
                 return;
             }
         }
+        log.info("Successfully sent request local Media Manager Server");
     }
 
 }

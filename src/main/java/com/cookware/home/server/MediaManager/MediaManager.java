@@ -1,6 +1,10 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
+import java.math.BigInteger;
+
 import com.bitlove.fnv.FNV;
 import org.apache.log4j.Logger;
 
@@ -37,15 +41,35 @@ public class MediaManager extends Thread{
         }
     }
 
-    public void add(String url, int priority, String quality){
+    public void add(String url, int priority, String qualityString){
+        MediaInfo info = pullMediaInfoFromUrl(url);
 
+//        String shortMediaName = generateShortMediaName(info);
+        String shortMediaName = String.format("%f",Math.random());
 
-//        log.info("MADE IT");
-//        log.info(this.stringHasher.fnv1a_64("blah".getBytes()));
+        BigInteger mediaId = this.stringHasher.fnv1a_32(shortMediaName.getBytes());
+        log.info(mediaId);
+        log.info(DownloadState.PENDING.ordinal());
 
-        dataBaseManager.addMedia((int) Math.round(Math.random()*1000), "Kody", url, 240, 0, 1, "01/02/1992", "09/09/2017");
+//        int quality = qualityStringIntoInteger(qualityString);
+        int quality = -1;
+
+        dataBaseManager.addMedia(mediaId, info.NAME, info.URL, quality, 1, priority, info.RELEASE, LocalDate.now());
 
         // TODO: Add item to queue
+    }
+
+
+    public MediaInfo pullMediaInfoFromUrl(String url){
+        MediaInfo info = new MediaInfo();
+
+        WebTool webTool = new WebTool(url);
+
+        info.URL = url;
+        info.NAME = "kody";
+        info.RELEASE = LocalDate.now();
+
+        return info;
     }
 
     public class QueuedMedia {
@@ -57,5 +81,13 @@ public class MediaManager extends Thread{
 
         }
 
+    }
+
+    public class MediaInfo {
+        public String URL;
+        public String NAME;
+        public LocalDate RELEASE;
+        public MediaType TYPE;
+        public float EPISODE;
     }
 }
