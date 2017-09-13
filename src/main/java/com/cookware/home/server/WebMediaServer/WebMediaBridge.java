@@ -145,7 +145,6 @@ public class WebMediaBridge {
             conn.setReadTimeout(5000);
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
             conn.addRequestProperty("User-Agent", "Mozilla");
-            conn.addRequestProperty("Referer", "google.com");
             conn.addRequestProperty("Referer", url);
 
             if(type.equals(HttpRequestType.POST)){

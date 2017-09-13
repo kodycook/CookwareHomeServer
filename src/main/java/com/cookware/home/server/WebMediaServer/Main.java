@@ -23,6 +23,7 @@ public class Main {
         String downloadUrl = "";
 
         while(true) {
+            // TODO: Fix the SKIP_SCRAPE FUNCTIONALITY TO WORK
             if (automate == AutomateLevel.SKIP_SCRAPE) {
                 try {
                     // TODO: Udate this automatic method to automate selection (maybe even remove it

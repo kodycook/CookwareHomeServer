@@ -22,7 +22,7 @@
         <param name="file" value="logs/MediaManager.log" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern"
-                   value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %30.30c %x- %m%n" />
+                   value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%15.15t] %30.30c %x- L%-4L: %m%n" />
         </layout>
     </appender>
 

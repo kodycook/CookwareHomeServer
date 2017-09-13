@@ -1,4 +1,4 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -15,13 +15,12 @@ import java.util.*;
 /**
  * Created by Kody on 5/09/2017.
  */
-public class RequestHandler extends Thread {
-    protected static int port;
-    protected static MediaManager mediaManager;
-    protected static Logger log;
+public class RequestHandler implements Runnable {
+    private final int port;
+    private final MediaManager mediaManager;
+    private  final Logger log = Logger.getLogger(RequestHandler.class);
 
     public RequestHandler(MediaManager mMediaManager){
-        log = Logger.getLogger(this.getClass());
         mediaManager = mMediaManager;
         port = 9000;
     }
@@ -48,7 +47,7 @@ public class RequestHandler extends Thread {
         server.start();
     }
 
-    public static void addMedia(Map<String, Object> parameters){
+    public void addMedia(Map<String, Object> parameters){
         String url = "";
         int priority = 3;
         String quality = "MAX";
@@ -62,11 +61,11 @@ public class RequestHandler extends Thread {
                 quality = (String) parameters.get(key);
             }
             log.info(String.format("Received Media Request with attributes: URL: %s",url));
-            mediaManager.add(url, priority, quality);
+            mediaManager.addNewMediaRequest(url, priority, quality);
         }
     }
 
-    public static class RootHandler implements HttpHandler  {
+    public class RootHandler implements HttpHandler  {
 
         @Override
         public void handle(HttpExchange he) throws IOException {
@@ -76,10 +75,11 @@ public class RequestHandler extends Thread {
             OutputStream os = he.getResponseBody();
             os.write(response.getBytes());
             os.close();
+            he.close();
         }
     }
 
-    public static class EchoHeaderHandler implements HttpHandler {
+    public class EchoHeaderHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange he) throws IOException {
@@ -92,10 +92,11 @@ public class RequestHandler extends Thread {
             OutputStream os = he.getResponseBody();
             os.write(response.getBytes());
             os.close();
+            he.close();
         }
     }
 
-    public static class EchoGetHandler implements HttpHandler {
+    public class EchoGetHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange he) throws IOException {
@@ -114,10 +115,11 @@ public class RequestHandler extends Thread {
             os.write(response.getBytes());
 
             os.close();
+            he.close();
         }
     }
 
-    public static class EchoPostHandler implements HttpHandler {
+    public class EchoPostHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange he) throws IOException {
@@ -133,16 +135,18 @@ public class RequestHandler extends Thread {
             for (String key : parameters.keySet()){
                 response += key + " = " + parameters.get(key) + "\n";
             }
-            addMedia(parameters);
 
             he.sendResponseHeaders(200, response.length());
             OutputStream os = he.getResponseBody();
             os.write(response.getBytes());
             os.close();
+            he.close();
+
+            addMedia(parameters);
         }
     }
 
-    public static void parseQuery(String query, Map<String,
+    public void parseQuery(String query, Map<String,
             Object> parameters) throws UnsupportedEncodingException {
 
         if (query != null) {

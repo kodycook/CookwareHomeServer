@@ -1,4 +1,4 @@
-package MediaManager;
+package com.cookware.home.server.MediaManager;
 
 /**
  * Created by Kody on 19/08/2017.

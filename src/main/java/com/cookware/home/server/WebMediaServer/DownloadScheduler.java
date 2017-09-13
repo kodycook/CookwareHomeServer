@@ -53,7 +53,9 @@ public class DownloadScheduler implements Runnable {
     public void addMedia(Media media){
         if(media instanceof Movie){
             if(media.getState().equals(DownloadState.PENDING)){
+
                 addDownloadToQueue(new Download(media.getName(), media.getLink(), MediaType.MOVIE, media.getPriority()));
+//                addDownloadToQueue(new Download(media.getName(), "http://www.primewire.ag/tv-1386995-Game-of-Thrones/season-7-episode-7", MediaType.MOVIE, media.getPriority()));
             }
         }
         else if (media instanceof TvShow) {

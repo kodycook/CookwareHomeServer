@@ -17,6 +17,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -26,13 +27,11 @@ import java.util.Scanner;
 /**
  * Created by Kody on 5/09/2017.
  */
-public class ClientStub extends Thread{
-    AutomateLevel automate = AutomateLevel.SKIP_SEARCH;
-    private Logger log;
+public class ClientStub implements Runnable{
+    private AutomateLevel automate = AutomateLevel.NONE;
+    private static final Logger log = Logger.getLogger(ClientStub.class);
 
     public ClientStub(){
-        log = Logger.getLogger(this.getClass());
-
     }
 
 
@@ -42,7 +41,7 @@ public class ClientStub extends Thread{
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(String.format("Thread has been interrupted:\n%s", e.getMessage()));
         }
 
         String mediaUrl = "";
@@ -50,16 +49,20 @@ public class ClientStub extends Thread{
             mediaUrl = "http://www.primewire.ag/watch-2793216-Guardians-of-the-Galaxy-Vol-2-online-free";
 
         }else {
-            String searchUrl = baseUrl + "/index.php?search_keywords=" + getSearchQuery();
+            String mediaUrlSpecifics = "";
+            boolean firstTimeInLoop = true;
 
-            String mediaUrlSpecifics = scrapeMediaUrlFromSearch(searchUrl);
-
-            if (mediaUrlSpecifics.equals("")){
-                log.error("No media Url provided - SKIPPING");
-                return;
-            } else {
-                mediaUrl = baseUrl + mediaUrlSpecifics;
+            while(mediaUrlSpecifics.equals("")){
+                if(!firstTimeInLoop && (automate == AutomateLevel.SKIP_SEARCH)){
+                    automate = AutomateLevel.NONE;
+                    firstTimeInLoop = false;
+                }
+                String searchUrl = baseUrl + "/index.php?search_keywords=" + getSearchQuery();
+                mediaUrlSpecifics = scrapeMediaUrlFromSearch(searchUrl);
             }
+
+
+            mediaUrl = baseUrl + mediaUrlSpecifics;
         }
 
         sendUrlToManager(mediaUrl);
@@ -69,7 +72,7 @@ public class ClientStub extends Thread{
         String search;
         if (this.automate == AutomateLevel.NONE) {
             Scanner consoleScanner = new Scanner(System.in);
-            System.out.print("Select a Movie/TV Show to search: ");
+            System.out.print("\nSelect a Movie/TV Show to search: ");
             search = consoleScanner.useDelimiter("\n").next();
         } else {
             search = "Guardians of the Galaxy";
@@ -104,7 +107,6 @@ public class ClientStub extends Thread{
                 log.error("Cannot access primewire - check VPN connection");
                 return "";
         } else {
-                log.info("Successfully connected to primewire");
         }
 
         String html = "";
@@ -113,8 +115,6 @@ public class ClientStub extends Thread{
         }
 
         Document document = Jsoup.parse(html);
-
-        System.out.println();
 
         Elements matchedMovies = document.getElementsByClass("index_item");
 
@@ -145,42 +145,11 @@ public class ClientStub extends Thread{
 
         log.info("Sending request to local Media Manager Server");
 
-        HttpClient httpclient = HttpClients.createDefault();
-        HttpPost httppost = new HttpPost("http://localhost:9000/echoPost");
-
+        String serverAddress = "http://localhost:9000/echoPost";
         List<NameValuePair> params = new ArrayList<NameValuePair>(1);
         params.add(new BasicNameValuePair("url", url));
-        try {
-            httppost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            log.error("Parameters for POST request not encoded properly");
-            return;
-        }
 
-        HttpResponse response = null;
-        try {
-            response = httpclient.execute(httppost);
-        } catch (IOException e) {
-            log.error("Cannont POST to local Media Manager Server - has it been instantiated");
-            return;
-        }
-        HttpEntity entity = response.getEntity();
-
-        if (entity != null) {
-            InputStream inStream = null;
-            try {
-                inStream = entity.getContent();
-//                StringWriter writer = new StringWriter();
-//                IOUtils.copy(inStream, writer, "UTF-8");
-//                String result = writer.toString();
-//                System.out.println(result);
-                inStream.close();
-            } catch (IOException e) {
-                log.error("Cannot parse response from local Media Manager Server");
-                return;
-            }
-        }
-        log.info("Successfully sent request local Media Manager Server");
+        (new WebTool()).getWebPageHtml(serverAddress, WebTool.HttpRequestType.POST, params);
     }
 
 }
