@@ -21,7 +21,7 @@ public class MediaManagerRunnable implements Runnable{
     private final DatabaseManager databaseManager = new DatabaseManager("media.db");
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final boolean isDownloading = true;
+    private final boolean isDownloading = false;
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
     // TODO: Make the Path Strings part of configuration and find a better way to share the globals with DownloadManager
     public static String tempPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
@@ -94,6 +94,7 @@ public class MediaManagerRunnable implements Runnable{
             log.info(String.format("Retrieved %d pending downloads from Database", tempMediaQueue.size()));
             for (MediaInfo queuedMedia : tempMediaQueue) {
                 mediaQueue.add(queuedMedia);
+                log.info(queuedMedia.toString());
             }
         }
     }
@@ -103,6 +104,8 @@ public class MediaManagerRunnable implements Runnable{
         final WebTools webTools = new WebTools();
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
+
+        // TODO: Clean up the writing to the database and the handling of MediaInfo Objects
 
         info.URL = url;
         info.QUALITY = qualityStringIntoInteger(qualityString);
@@ -290,6 +293,6 @@ public class MediaManagerRunnable implements Runnable{
     }
 
     public void rebuildDataBaseFromPath(){
-        // TODO: Complete this method
+        // TODO: Implement this (rebuildDataBaseFromPath) method
     }
 }

@@ -12,8 +12,7 @@ import java.io.PrintStream;
  */
 public class Launcher {
     private static final Logger log = Logger.getLogger(Launcher.class);
-    static PrintStream consoleStream;
-    final static String logPropertiesPath = "src\\main\\java\\com\\cookware\\home\\server\\MediaManager\\log4j.xml";
+    final static String logPropertiesPath = "config\\log4j.xml";
 
 
     public static void main( String[] args ) {
@@ -21,8 +20,9 @@ public class Launcher {
         // TODO: Write Unit Tests
         // TODO: Remove all unused exports
         // TODO: Add in  functionality to read in config from file
+        // TODO: Create proper Maven Build Process
+        // TODO: Improve the performance of the web capability
 
-//        hideConsole();
         DOMConfigurator.configure(logPropertiesPath);
 
         log.info("Launcher Started");
@@ -35,30 +35,11 @@ public class Launcher {
         Thread requestHandlerThread = new Thread(requestHandler);
         Thread clientStubThread = new Thread(clientStub);
 
+
         // TODO: give the other runnable classes runnable interfaces
         mediaManager.start();
 
         requestHandlerThread.start();
         clientStubThread.start();
-
-//        showConsole();
-
-
-
-    }
-
-    public static void hideConsole(){
-        consoleStream = System.out;
-
-        PrintStream dummyStream    = new PrintStream(new OutputStream(){
-            public void write(int b) {
-                //NO-OP
-            }
-        });
-        System.setOut(dummyStream);
-    }
-
-    public static void showConsole(){
-        System.setOut(consoleStream);
     }
 }

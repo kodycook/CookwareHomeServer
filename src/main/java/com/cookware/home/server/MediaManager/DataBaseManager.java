@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class DatabaseManager {
     private FileNameTools fileNameTools = new FileNameTools();
+    private DirectoryTools directoryTools = new DirectoryTools();
     private final Logger log = Logger.getLogger(DatabaseManager.class);
     private String fileName;
     private String url;
@@ -23,8 +24,7 @@ public class DatabaseManager {
     }
 
     public void initialiseDataBase() {
-        // TODO: Create directory for database if it doesn't exsist
-        // TODO: Rework the init function so that creating a database can't crash
+        directoryTools.createNewDirectory("data");
 
         Connection conn = null;
         this.url = "jdbc:sqlite:data/" + fileName;
@@ -203,6 +203,7 @@ public class DatabaseManager {
                 mediaInfo.QUALITY = rs.getInt("QUALITY");
                 mediaInfo.PRIORITY = rs.getInt("PRIORITY");
                 mediaInfo.RELEASED = LocalDate.parse(rs.getString("RELEASED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                mediaInfo.ADDED = LocalDate.parse(rs.getString("ADDED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 mediaInfo.PATH = rs.getString("PATH");
                 if (mediaInfo.TYPE.equals(MediaType.EPISODE)){
                     mediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
@@ -286,7 +287,7 @@ public class DatabaseManager {
     }
 
     public void upadateFieldOfEntry(BigInteger mediaId, String fieldName, Object fieldValue){
-        // TODO: Implement this (UpdateEntry) method
+        // TODO: Implement this (upadateFieldOfEntry) method
         log.warn("USING UNFINISHED METHOD");
     }
 
