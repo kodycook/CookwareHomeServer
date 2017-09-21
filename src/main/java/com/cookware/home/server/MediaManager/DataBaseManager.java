@@ -1,32 +1,31 @@
 package com.cookware.home.server.MediaManager;
 
-import com.cookware.home.server.WebMediaServer.Media;
 import org.apache.log4j.Logger;
 
 import java.math.BigInteger;
-import java.rmi.server.ExportException;
 import java.sql.*;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Created by Kody on 8/09/2017.
  */
-public class DataBaseManager {
+public class DatabaseManager {
+    private FileNameTools fileNameTools = new FileNameTools();
+    private final Logger log = Logger.getLogger(DatabaseManager.class);
     private String fileName;
     private String url;
-    private final Logger log = Logger.getLogger(DataBaseManager.class);
 
-
-    public DataBaseManager(String mFileName) {
+    public DatabaseManager(String mFileName) {
         this.fileName = mFileName;
     }
 
     public void initialiseDataBase() {
+        // TODO: Create directory for database if it doesn't exsist
+        // TODO: Rework the init function so that creating a database can't crash
+
         Connection conn = null;
         this.url = "jdbc:sqlite:data/" + fileName;
 
@@ -56,6 +55,7 @@ public class DataBaseManager {
                     "DOWNLOADED DATE, " +
                     "PATH       TEXT, " +
                     "PARENTID   BIGINT, " +
+                    "PARENTNAME   BIGINT, " +
                     "EPISODE    DECIMAL(4,2), " +
                     "PRIMARY KEY (ID)" +
                     ")";
@@ -82,11 +82,12 @@ public class DataBaseManager {
 
             stmt = connection.createStatement();
             String sql;
+
             if(info.TYPE.equals(MediaType.EPISODE)){
                 sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID) " +
-                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %f, %d);",
+                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %f, %d, %s);",
                         info.ID,
-                        info.NAME,
+                        fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'","''"),
                         info.TYPE.ordinal(),
                         info.URL,
                         info.QUALITY,
@@ -95,13 +96,14 @@ public class DataBaseManager {
                         java.sql.Date.valueOf(info.RELEASED),
                         java.sql.Date.valueOf(added),
                         info.EPISODE,
-                        info.PARENTSHOWID);
+                        info.PARENTSHOWID,
+                        fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'","''"));
             }
             else {
                 sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
                                 "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
                         info.ID,
-                        info.NAME,
+                        fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'","''"),
                         info.TYPE.ordinal(),
                         info.URL,
                         info.QUALITY,
@@ -110,14 +112,14 @@ public class DataBaseManager {
                         java.sql.Date.valueOf(info.RELEASED),
                         java.sql.Date.valueOf(added));
             }
-//            log.info(String.format("SQL Query sent to database: %s", sql));
+
+            log.debug(String.format("SQL Query sent to database: %s", sql));
             try {
                 stmt.executeUpdate(sql);
             } catch (Exception e) {
-
-                log.error(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
+                log.warn(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
                         info.toString(),
-                        getMediaitem(info.ID).toString()));
+                        getMediaItem(info.ID).toString()));
                 return false;
             }
 
@@ -125,7 +127,7 @@ public class DataBaseManager {
             connection.commit();
             connection.close();
         } catch (Exception e) {
-            log.error("Error updating Database");
+            log.error(String.format("Error updating Database with: %s", info.toString()), e);
             return false;
         }
         return true;
@@ -158,9 +160,10 @@ public class DataBaseManager {
                 currentMediaInfo.QUALITY = rs.getInt("QUALITY");
                 currentMediaInfo.PRIORITY = rs.getInt("PRIORITY");
                 currentMediaInfo.RELEASED = LocalDate.parse(rs.getString("RELEASED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
+                currentMediaInfo.PATH = rs.getString("PATH");
                 if (currentMediaInfo.TYPE.equals(MediaType.EPISODE)){
                     currentMediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
+                    currentMediaInfo.PARENTSHOWNAME = rs.getString("PARENTNAME");
                     currentMediaInfo.EPISODE = rs.getFloat("EPISODE");
                 }
 
@@ -170,12 +173,12 @@ public class DataBaseManager {
             stmt.close();
             c.close();
         } catch (Exception e) {
-            log.error(String.format("Cannot extract queued media from Database:\n%s", e));
+            log.error("Cannot extract queued media from Database", e);
         }
         return mediaQueue;
     }
 
-    public MediaInfo getMediaitem(BigInteger mediaID){
+    public MediaInfo getMediaItem(BigInteger mediaID){
         MediaInfo mediaInfo = null;
         Connection c = null;
         Statement stmt = null;
@@ -190,8 +193,7 @@ public class DataBaseManager {
                     "WHERE ID = %d ;",
                     mediaID));
 
-
-            while (rs.next()) {
+            if (rs.next()) {
                 mediaInfo = new MediaInfo();
                 mediaInfo.ID = new BigInteger(rs.getString("ID"));
                 mediaInfo.NAME = rs.getString("NAME");
@@ -201,22 +203,29 @@ public class DataBaseManager {
                 mediaInfo.QUALITY = rs.getInt("QUALITY");
                 mediaInfo.PRIORITY = rs.getInt("PRIORITY");
                 mediaInfo.RELEASED = LocalDate.parse(rs.getString("RELEASED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
+                mediaInfo.PATH = rs.getString("PATH");
                 if (mediaInfo.TYPE.equals(MediaType.EPISODE)){
                     mediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
+                    mediaInfo.PARENTSHOWNAME = rs.getString("PARENTNAME");
                     mediaInfo.EPISODE = rs.getFloat("EPISODE");
                 }
             }
+            else {
+                log.error(String.format("Could not find requested item in database - ID:%d", mediaID));
+                return null;
+            }
+
+
             rs.close();
             stmt.close();
             c.close();
         } catch (Exception e) {
-            log.error(e);
+            log.error("Cannot extract media from database", e);
         }
         return mediaInfo;
     }
 
-    // TODO: Modify function to be able to update any attribute
+
     public void updateState(BigInteger mediaId, DownloadState downloadState){
 
         Connection c = null;
@@ -234,8 +243,51 @@ public class DataBaseManager {
             c.commit();
             stmt.close();
             c.close();
+
+            log.debug(String.format("SQL sent to Database: \"%s\"", sql));
         } catch ( Exception e ) {
-            log.error(String.format("Failed to update database\n%s",e.getMessage()));
+            log.error(String.format("Failed to update database - ID:%d",mediaId),e);
         }
     }
+
+    // TODO: Modify function to be able to update any attribute
+    public void updatePath(BigInteger mediaId, String path){
+
+        Connection c = null;
+        Statement stmt = null;
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection(this.url);
+            c.setAutoCommit(false);
+
+            stmt = c.createStatement();
+            String sql = String.format("UPDATE MEDIA SET PATH = '%s' where ID=%d;",
+                    fileNameTools.removeSpecialCharactersFromString(path),
+                    mediaId);
+            stmt.executeUpdate(sql);
+
+            c.commit();
+            stmt.close();
+            c.close();
+
+            log.debug(String.format("SQL sent to Database: \"%s\"", sql));
+        } catch ( Exception e ) {
+            log.info(fileNameTools.removeSpecialCharactersFromString(path));
+            log.error("Failed to update database",e);
+        }
+    }
+
+
+    public void updateEntireMediaEntry(MediaInfo mediaInfo){
+        // TODO: Implement this (updateEntireMediaEntry) method
+        log.warn("USING UNFINISHED METHOD");
+        return;
+    }
+
+    public void upadateFieldOfEntry(BigInteger mediaId, String fieldName, Object fieldValue){
+        // TODO: Implement this (UpdateEntry) method
+        log.warn("USING UNFINISHED METHOD");
+    }
+
 }

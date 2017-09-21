@@ -28,28 +28,43 @@ import java.util.regex.Pattern;
  */
 public class DownloadManager {
     // TODO: Convert all System.out.print statements to log.info
-
+    // TODO Implement interfaces to create different versions of the web scrapers
     private static final Logger log = Logger.getLogger(DownloadManager.class);
-    private final WebTool webTool = new WebTool();
-    private final String moviePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Movies";
-    private final String tvPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\TV";
+    private final WebTools webTools = new WebTools();
+    private final FileNameTools fileNameTools = new FileNameTools();
+    private final DatabaseManager databaseManager;
     private String fileType;
 
+    public DownloadManager(DatabaseManager mDatabaseManager){
+        this.databaseManager = mDatabaseManager;
+    }
 
-    public boolean downloadMedia(MediaInfo mediaInfo){
-        String embeddedMediaUrl = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
-        log.info(embeddedMediaUrl);
+    public MediaInfo downloadMedia(MediaInfo mediaInfo){
+        boolean downloadSuccess;
+        final String embeddedMediaUrl = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
+        mediaInfo.PATH = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
+        if (mediaInfo.PATH.equals("")){
+            return null;
+        }
+        mediaInfo.PATH += fileType;
         // TODO: Change newDownload to take in MediaInfo as a parameter to properly construct filenames
-        newDownload(embeddedMediaUrl, mediaInfo.NAME + fileType, mediaInfo.TYPE);
+
+        databaseManager.updatePath(mediaInfo.ID, (mediaInfo.PATH));
+        // TODO: Change state of media to "DOWNLOADING"
+        downloadSuccess = newDownload(embeddedMediaUrl, mediaInfo.PATH, mediaInfo.TYPE);
+        if(!downloadSuccess){
+            log.error(String.format("Issue downloading: %s",mediaInfo.toString()));
+            return null;
+        }
 
 
-        return true;
+        return mediaInfo;
     }
 
     private String bridgeToVideoMe(String url, int quality){
-        String html = webTool.getWebPageHtml(url);
-        String videoMeUrl = webTool.extractBaseURl(url) + findVideoMeLinkInHtml(html);
-        String redirectedUrl = webTool.getRedirectedUrl(videoMeUrl);
+        String html = webTools.getWebPageHtml(url);
+        String videoMeUrl = webTools.extractBaseURl(url) + findVideoMeLinkInHtml(html);
+        String redirectedUrl = webTools.getRedirectedUrl(videoMeUrl);
         List<DownloadLink> mediaDownloadLinks = extractAllMediaUrls(redirectedUrl);
         String embeddedMediaUrl = selectBestLinkByQuality(mediaDownloadLinks, quality);
 
@@ -62,7 +77,7 @@ public class DownloadManager {
         Document document = Jsoup.parse(html);
         Elements matchedLinks = document.getElementsByTag("table");
         if(matchedLinks.isEmpty()){
-            System.out.println("No entries found, please try again!");
+            log.debug("No entries found, please try again!");
 
             return null;
         }
@@ -93,7 +108,7 @@ public class DownloadManager {
         // TODO: Clean up this function
         Scanner scan;
         String logicalLine;
-        String firstPage = webTool.getWebPageHtml(url);
+        String firstPage = webTools.getWebPageHtml(url);
         Document document = Jsoup.parse(firstPage);
         String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
 
@@ -103,7 +118,7 @@ public class DownloadManager {
         params.add(new BasicNameValuePair("hash", hash));
         params.add(new BasicNameValuePair("inhu", "foff"));
 
-        String secondPage = webTool.getWebPageHtml(url, WebTool.HttpRequestType.POST, params);
+        String secondPage = webTools.getWebPageHtml(url, WebTools.HttpRequestType.POST, params);
 
         int startOfUrlCodeInWebPage = secondPage.indexOf("lets_play_a_game='");
 
@@ -111,7 +126,7 @@ public class DownloadManager {
         scan.useDelimiter(Pattern.compile("'"));
         logicalLine = scan.next();
 
-        String thirdPage = webTool.getWebPageHtml("https://thevideo.me/vsign/player/"+logicalLine);
+        String thirdPage = webTools.getWebPageHtml("https://thevideo.me/vsign/player/"+logicalLine);
 
         String[] encodedAttributes = thirdPage.split("\\|");
 
@@ -163,19 +178,16 @@ public class DownloadManager {
     }
 
 
-    public void newDownload(String downloadUrl, String downloadFilename, MediaType type){
+    public boolean newDownload(String downloadUrl, String downloadFilename, MediaType type){
         String downloadFilepath = "";
-        if(type == MediaType.MOVIE) {
-            downloadFilepath = this.moviePath;
-        }
-        else {
-            downloadFilepath = this.tvPath;
-        }
+        downloadFilepath = MediaManagerRunnable.tempPath;
         File output = new File(downloadFilepath, downloadFilename);
         try {
             downloadMediaToFile(downloadUrl, output);
+            return true;
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            log.error(String.format("Error downloading media from %s to %s:\n",downloadUrl, downloadFilename), throwable);
+            return false;
         }
     }
 
@@ -184,14 +196,14 @@ public class DownloadManager {
         HttpGet httpget2 = new HttpGet(downloadUrl);
         long startTime = System.currentTimeMillis();
 
-        System.out.println("Executing " + httpget2.getURI());
+        log.debug("Executing " + httpget2.getURI());
         HttpClient httpclient2 = new DefaultHttpClient();
         HttpResponse response2 = httpclient2.execute(httpget2);
         HttpEntity entity2 = response2.getEntity();
         if (entity2 != null && response2.getStatusLine().getStatusCode() == 200) {
             long length = entity2.getContentLength();
             InputStream instream2 = entity2.getContent();
-            System.out.println("Writing " + length + " bytes to " + outputfile);
+            log.debug("Writing " + length + " bytes to " + outputfile);
             if (outputfile.exists()) {
                 outputfile.delete();
             }
