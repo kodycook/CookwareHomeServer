@@ -2,28 +2,21 @@ package com.cookware.home.server.MediaManager;
 
 import org.apache.http.NameValuePair;
 import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created by Kody on 9/09/2017.
  * The Web Tool package takes a single url and provides an array of capabilities (GET/POST requests)
  */
-public class WebTool {
-    private static final Logger log = Logger.getLogger(WebTool.class);
+public class WebTools {
+    private static final Logger log = Logger.getLogger(WebTools.class);
 
-    public WebTool(){
+    public WebTools(){
     }
 
 

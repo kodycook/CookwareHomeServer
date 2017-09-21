@@ -1,18 +1,6 @@
 package com.cookware.home.server.MediaManager;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.math.BigInteger;
-import java.util.List;
-
-import com.bitlove.fnv.FNV;
 import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 
 /**
@@ -23,6 +11,8 @@ public class MediaManager {
     private static final Logger log = Logger.getLogger(MediaManager.class);
 
     public void start(){
+        // TODO: Sort out syncronised access to variables
+
         Thread thread = new Thread(mediaManagerRunnable);
         thread.start();
     }

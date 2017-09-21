@@ -19,6 +19,8 @@ public class Launcher {
     public static void main( String[] args ) {
         // TODO: Write Java Docs
         // TODO: Write Unit Tests
+        // TODO: Remove all unused exports
+        // TODO: Add in  functionality to read in config from file
 
 //        hideConsole();
         DOMConfigurator.configure(logPropertiesPath);

@@ -1,12 +1,6 @@
 package com.cookware.home.server.MediaManager;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -16,8 +10,6 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -149,7 +141,7 @@ public class ClientStub implements Runnable{
         List<NameValuePair> params = new ArrayList<NameValuePair>(1);
         params.add(new BasicNameValuePair("url", url));
 
-        (new WebTool()).getWebPageHtml(serverAddress, WebTool.HttpRequestType.POST, params);
+        (new WebTools()).getWebPageHtml(serverAddress, WebTools.HttpRequestType.POST, params);
     }
 
 }

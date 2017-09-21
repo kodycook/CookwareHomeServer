@@ -1,6 +1,5 @@
 package com.cookware.home.server.MediaManager;
 
-import com.bitlove.fnv.FNV;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -18,18 +17,20 @@ import java.util.List;
  */
 public class MediaManagerRunnable implements Runnable{
     private final List<MediaInfo> mediaQueue = new ArrayList<>();
-    private final DownloadManager downloadManager = new DownloadManager();
-    private final DataBaseManager dataBaseManager;
-    private final FNV stringHasher;
+    private final FileNameTools fileNameTools = new FileNameTools();
+    private final DatabaseManager databaseManager = new DatabaseManager("media.db");
+    private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
+    private final DownloadManager downloadManager = new DownloadManager(databaseManager);
+    private final boolean isDownloading = true;
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
-
+    // TODO: Make the Path Strings part of configuration and find a better way to share the globals with DownloadManager
+    public static String tempPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
+    public static String moviePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\Movies";
+    public static String episodePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\TV";
 
     public MediaManagerRunnable(){
-        stringHasher = new FNV();
-        dataBaseManager = new DataBaseManager("media.db");
-        dataBaseManager.initialiseDataBase();
+        databaseManager.initialiseDataBase();
     }
-
 
     @Override
     public void run()
@@ -37,10 +38,17 @@ public class MediaManagerRunnable implements Runnable{
         boolean downloadSuccess;
         int index = 0;
         MediaInfo currentMedia;
+        MediaInfo tempMedia;
         retrieveQueuedMediaFromDatabase(mediaQueue);
+
+        fileTransferrer.start();
 
         while(true)
         {
+            if (!isDownloading) {
+                break;
+            }
+
             while(mediaQueue.size()>index){
                 // TODO: Add a method to sort the media queue by priority
 
@@ -49,36 +57,39 @@ public class MediaManagerRunnable implements Runnable{
                     index ++;
                 }
                 else {
-                    downloadSuccess = downloadManager.downloadMedia(currentMedia);
-                    if (downloadSuccess) {
+                    tempMedia = downloadManager.downloadMedia(currentMedia);
+                    if(tempMedia != null){
+                        currentMedia = tempMedia;
                         updateState(currentMedia, DownloadState.TRANSFERRING);
-                        // TODO: Add a method to move the media into the correct place
-                        updateState(currentMedia, DownloadState.FINISHED);
+                        // TODO: Update the path in the Database
+                        // TODO: Add a method to move the media into the correct place and update the path in the database
                         mediaQueue.remove(index);
-                    } else {
+                    }
+                    else {
                         log.error(String.format("Media failed to download: %s", currentMedia.toString()));
                         updateState(currentMedia, DownloadState.FAILED);
                         index++;
                     }
                 }
             }
-
             log.info("No more media to download");
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("MediaManager thread interrupted", e);
+                System.exit(-1);
             }
         }
     }
 
     public void updateState(MediaInfo mediaInfo, DownloadState downloadState){
         mediaInfo.STATE = downloadState;
-        dataBaseManager.updateState(mediaInfo.ID, downloadState);
+        databaseManager.updateState(mediaInfo.ID, downloadState);
     }
 
+
     public void retrieveQueuedMediaFromDatabase(List<MediaInfo> mediaQueue) {
-        List<MediaInfo> tempMediaQueue = dataBaseManager.getDownloadQueue();
+        List<MediaInfo> tempMediaQueue = databaseManager.getDownloadQueue();
         if(tempMediaQueue.size()!=0) {
             log.info(String.format("Retrieved %d pending downloads from Database", tempMediaQueue.size()));
             for (MediaInfo queuedMedia : tempMediaQueue) {
@@ -89,14 +100,13 @@ public class MediaManagerRunnable implements Runnable{
 
 
     public void addNewMediaRequest(String url, int priority, String qualityString){
-        final WebTool webTool = new WebTool();
+        final WebTools webTools = new WebTools();
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
 
         info.URL = url;
         info.QUALITY = qualityStringIntoInteger(qualityString);
         info.PRIORITY = priority;
-
 
         if (episodes.isEmpty()) {
             info.TYPE = MediaType.MOVIE;
@@ -109,6 +119,7 @@ public class MediaManagerRunnable implements Runnable{
             for(MediaInfo episodeInfo: episodes){
                 episodeInfo.TYPE = MediaType.EPISODE;
                 episodeInfo.PARENTSHOWID = info.ID;
+                episodeInfo.PARENTSHOWNAME = info.NAME;
                 episodeInfo.PRIORITY = info.PRIORITY;
                 episodeInfo.QUALITY = info.QUALITY;
                 episodeInfo = addMediaToDataBase(episodeInfo);
@@ -118,9 +129,9 @@ public class MediaManagerRunnable implements Runnable{
 
 
     public ArrayList<MediaInfo> retrieveEpisodesFromUrl(String url){
-        WebTool webTool = new WebTool();
+        WebTools webTools = new WebTools();
         ArrayList<MediaInfo> episodeInfoList = new ArrayList<>();
-        final String html = webTool.getWebPageHtml(url);
+        final String html = webTools.getWebPageHtml(url);
         final Document document = Jsoup.parse(html);
         final Elements tvSeasons = document.getElementsByClass("tv_container");
         MediaInfo episodeInfo;
@@ -153,7 +164,7 @@ public class MediaManagerRunnable implements Runnable{
                                 if(episodeNumber != 0) {
                                     episodeInfo = new MediaInfo();
                                     episodeInfo.NAME = episodeAttributes[1];
-                                    episodeInfo.URL = webTool.extractBaseURl(url) + episode.getElementsByAttribute("href").attr("href");
+                                    episodeInfo.URL = webTools.extractBaseURl(url) + episode.getElementsByAttribute("href").attr("href");
                                     episodeInfo.EPISODE = seasonNumber + ((float) episodeNumber)/100;
                                     try {
                                         episodeInfo.RELEASED = LocalDate.parse(episodeReleaseDateAsString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -179,30 +190,39 @@ public class MediaManagerRunnable implements Runnable{
             info = scrapeMediaInfoFromUrl(info);
         }
 
-        String shortMediaName = generateShortMediaName(info);
-        info.ID = this.stringHasher.fnv1a_32(shortMediaName.getBytes());
+        info.ID = fileNameTools.generateHashFromMediaInfo(info);
 
         if(mediaInfoValid(info)){
-            success = dataBaseManager.addMediaToDatabase(info);
+            success = databaseManager.addMediaToDatabase(info);
         }
         else {
-            log.error("Media not added");
-            return info;
+            log.error("Media not added - mandartory attribute not set");
+            return null;
         }
 
         if(success){
             mediaQueue.add(info);
-//            for(QueuedMedia queuedMedia:mediaQueue){
-//                System.out.println(queuedMedia.toString());
-//            }
+            for(MediaInfo queuedMedia:mediaQueue){
+                log.debug(queuedMedia.toString());
+            }
+        }
+        else {
+            if(info.TYPE.equals(MediaType.EPISODE)){
+                log.info(String.format("Episode already in database: %s", info.toString()));
+            }
+            else if(info.TYPE.equals(MediaType.MOVIE)){
+                log.info(String.format("Movie already in database: %s", info.toString()));
+                return null;
+            }
         }
         return info;
     }
 
+
     public MediaInfo scrapeMediaInfoFromUrl(MediaInfo info){
         String name;
-        final WebTool webTool = new WebTool();
-        final String scrapedHtml = webTool.getWebPageHtml(info.URL);
+        final WebTools webTools = new WebTools();
+        final String scrapedHtml = webTools.getWebPageHtml(info.URL);
 
         if (!info.TYPE.equals(MediaType.EPISODE)){
             final Document document = Jsoup.parse(scrapedHtml);
@@ -212,7 +232,7 @@ public class MediaManagerRunnable implements Runnable{
         }
 
         // TODO: Move this code to the Media Downloader
-//        completeExtractedMediaHostUrl = webTool.extractBaseURl(url) + getRedirectedMediaLink(scrapeHtml);
+//        completeExtractedMediaHostUrl = webTools.extractBaseURl(url) + getRedirectedMediaLink(scrapeHtml);
 //        log.info(String.format("Extracted media URL:%s",completeExtractedMediaHostUrl));
 
         return info;
@@ -221,19 +241,6 @@ public class MediaManagerRunnable implements Runnable{
 
     public boolean mediaInfoValid(MediaInfo info){
         return true;
-    }
-
-
-    private String generateShortMediaName(MediaInfo info){
-        if((info.NAME != "")&&(info.RELEASED != null)) {
-            String result = info.NAME.replaceAll("\\s", "");
-            result += "(" + info.RELEASED.getYear() + ")";
-
-            return result;
-        }
-        else{
-            return "";
-        }
     }
 
 
@@ -282,35 +289,7 @@ public class MediaManagerRunnable implements Runnable{
         }
     }
 
-
-    public String getRedirectedMediaLink(String html){
-        final String mediaWebsite = "thevideo.me";
-        final Document document = Jsoup.parse(html);
-
-        Elements matchedLinks = document.getElementsByTag("table");
-
-        if(matchedLinks.isEmpty()){
-            log.error("No media entries found on website, please try again!");
-            return "";
-        }
-
-        int i = 1;
-        String site;
-        String urlExtension = "";
-        for (Element matchedLink : matchedLinks) {
-            if(matchedLink.hasAttr("class")) {
-                site = "";
-                try{
-                    site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
-                }catch(Exception e){
-                }
-                if(site.equals(mediaWebsite)){
-                    urlExtension = matchedLink.getElementsByAttribute("href").attr("href");
-                    break;
-                }
-                i++;
-            }
-        }
-        return urlExtension;
+    public void rebuildDataBaseFromPath(){
+        // TODO: Complete this method
     }
 }
