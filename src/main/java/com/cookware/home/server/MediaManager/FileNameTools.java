@@ -31,7 +31,6 @@ public class FileNameTools {
     public String getFullFileNameFromMediaInfo(MediaInfo mediaInfo){
         String mediaFileName = "";
         if(mediaInfo.TYPE.equals(MediaType.EPISODE)){
-            // TODO: check if directories exist and create them if not (maybe this should be done during the transfer)
             mediaFileName = String.format("%s - S%dE%d - %s (%d)",
                     mediaInfo.PARENTSHOWNAME,
                     (int) Math.floor(mediaInfo.EPISODE),
@@ -39,7 +38,6 @@ public class FileNameTools {
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());
         }else {
-            // TODO: check if directories exist and create them if not (maybe this should be done during the transfer)
             mediaFileName = mediaFileName = String.format("%s (%d)",
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());

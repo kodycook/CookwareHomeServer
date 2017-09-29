@@ -23,10 +23,6 @@ public class MediaManagerRunnable implements Runnable{
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
     private final boolean isDownloading = true;
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
-    // TODO: Make the Path Strings part of configuration and find a better way to share the globals with DownloadManager
-    public static String tempPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
-    public static String moviePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\Movies";
-    public static String episodePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\TV";
 
     public MediaManagerRunnable(){
         databaseManager.initialiseDataBase();

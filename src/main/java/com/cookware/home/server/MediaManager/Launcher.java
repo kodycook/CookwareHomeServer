@@ -3,9 +3,6 @@ package com.cookware.home.server.MediaManager;
 import org.apache.log4j.*;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-
 
 /**
  * Created by Kody on 5/09/2017.
@@ -31,15 +28,8 @@ public class Launcher {
         RequestHandler requestHandler = new RequestHandler(mediaManager);
         ClientStub clientStub = new ClientStub();
 
-
-        Thread requestHandlerThread = new Thread(requestHandler);
-        Thread clientStubThread = new Thread(clientStub);
-
-
-        // TODO: give the other runnable classes runnable interfaces
+        requestHandler.start();
+        clientStub.start();
         mediaManager.start();
-
-        requestHandlerThread.start();
-        clientStubThread.start();
     }
 }

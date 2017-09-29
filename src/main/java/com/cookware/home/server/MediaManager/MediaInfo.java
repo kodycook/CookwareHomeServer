@@ -2,7 +2,6 @@ package com.cookware.home.server.MediaManager;
 
 import org.apache.log4j.Logger;
 
-import javax.print.attribute.standard.Media;
 import java.math.BigInteger;
 import java.time.LocalDate;
 
@@ -11,7 +10,6 @@ import java.time.LocalDate;
  */
 public class MediaInfo {
     private static final Logger log = Logger.getLogger(MediaInfo.class);
-    // TODO: Create a flag that switches the toString method between a short and long format
     private final boolean printLong = false;
     public BigInteger ID;
     public String URL;

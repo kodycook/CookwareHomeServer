@@ -180,7 +180,7 @@ public class DownloadManager {
 
     public boolean newDownload(String downloadUrl, String downloadFilename, MediaType type){
         String downloadFilepath = "";
-        downloadFilepath = MediaManagerRunnable.tempPath;
+        downloadFilepath = MediaManager.tempPath;
         File output = new File(downloadFilepath, downloadFilename);
         try {
             downloadMediaToFile(downloadUrl, output);
