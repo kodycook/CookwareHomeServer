@@ -102,7 +102,7 @@ public class MediaInfo {
     }
 
     private String toStringShortEpisode(){
-        return String.format("[%d] %s - E%dS%d: %s (%s)",
+        return String.format("[%d] %s - S%dE%d: %s (%s)",
                 this.ID,
                 this.PARENTSHOWNAME,
                 getSeason(),

@@ -55,7 +55,7 @@ public class DatabaseManager {
                     "DOWNLOADED DATE, " +
                     "PATH       TEXT, " +
                     "PARENTID   BIGINT, " +
-                    "PARENTNAME   BIGINT, " +
+                    "PARENTNAME   TEXT, " +
                     "EPISODE    DECIMAL(4,2), " +
                     "PRIMARY KEY (ID)" +
                     ")";
@@ -84,8 +84,8 @@ public class DatabaseManager {
             String sql;
 
             if(info.TYPE.equals(MediaType.EPISODE)){
-                sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID) " +
-                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %f, %d, %s);",
+                sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
+                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %f, %d, '%s');",
                         info.ID,
                         fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'","''"),
                         info.TYPE.ordinal(),

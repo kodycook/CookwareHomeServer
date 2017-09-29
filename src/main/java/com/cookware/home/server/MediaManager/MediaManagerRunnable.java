@@ -21,7 +21,7 @@ public class MediaManagerRunnable implements Runnable{
     private final DatabaseManager databaseManager = new DatabaseManager("media.db");
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final boolean isDownloading = false;
+    private final boolean isDownloading = true;
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
     // TODO: Make the Path Strings part of configuration and find a better way to share the globals with DownloadManager
     public static String tempPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
@@ -199,15 +199,13 @@ public class MediaManagerRunnable implements Runnable{
             success = databaseManager.addMediaToDatabase(info);
         }
         else {
-            log.error("Media not added - mandartory attribute not set");
+            log.error("Media not added - mandatory attribute not set");
             return null;
         }
 
         if(success){
             mediaQueue.add(info);
-            for(MediaInfo queuedMedia:mediaQueue){
-                log.debug(queuedMedia.toString());
-            }
+            log.debug(info.toString());
         }
         else {
             if(info.TYPE.equals(MediaType.EPISODE)){
