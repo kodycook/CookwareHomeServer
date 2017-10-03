@@ -35,13 +35,24 @@ public class FileTransferrerRunnable implements Runnable {
                         currentFileId = fileNameTools.generateHashFromFullFileName(currentFileName);
                         currentMediaInfo = databaseManager.getMediaItem(currentFileId);
                         if(currentMediaInfo != null){
-                            if(currentMediaInfo.PATH == null){
-                                log.warn("This should never be reached - media entries should have a path once downloaded");
-                                currentMediaInfo.PATH = currentFileName;
+                            if (currentMediaInfo.STATE.equals(DownloadState.DOWNLOADING)) {
+                                continue;
                             }
-                            if (currentMediaInfo.STATE.equals(DownloadState.TRANSFERRING)) {
+                            else if (currentMediaInfo.STATE.equals(DownloadState.TRANSFERRING)) {
+                                if(currentMediaInfo.PATH == null){
+                                    log.warn("This should never be reached - media entries should have a path once downloaded");
+                                    currentMediaInfo.PATH = currentFileName;
+                                }
                                 transferMedia(currentMediaInfo);
+                                databaseManager.updateState(currentMediaInfo.ID, DownloadState.FINISHED);
+                                // TODO: Update the path in the Database
                             }
+                            else if (currentMediaInfo.STATE.equals(DownloadState.IGNORED)){
+                                // TODO: Delete ignored file if it has been downloaded
+                            }
+                        }
+                        else {
+                            log.error(String.format("Could not match \"%s\" media file to entry in database",currentFileName));
                         }
                     }
                 }
@@ -56,10 +67,14 @@ public class FileTransferrerRunnable implements Runnable {
         }
     }
 
-    private boolean mediaStorageAvailable(){
-        // TODO: Finish implementing this (mediaStorageAvailable) method
-        log.debug("USING AN UNFINISHED METHOD");
-        return true;
+    public boolean mediaStorageAvailable(){
+        File file = new File(MediaManager.finalPath);
+        if((file.isDirectory())&&(file.exists())){
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private void transferMedia(MediaInfo mediaInfo){
@@ -74,11 +89,10 @@ public class FileTransferrerRunnable implements Runnable {
                 oldFullFileName = MediaManager.tempPath + "\\" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
-                localDirectory = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
-
-                directoryTools.createNewDirectory(MediaManager.moviePath + "\\" + localDirectory);
-                mediaInfo.PATH = "\\" + localDirectory + "\\" + mediaInfo.PATH;
-                newFullFileName = MediaManager.moviePath + mediaInfo.PATH;
+                localDirectory = "\\Movies\\" + fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
+                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
+                newFullFileName = MediaManager.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
             }
@@ -86,12 +100,12 @@ public class FileTransferrerRunnable implements Runnable {
                 oldFullFileName = MediaManager.tempPath + "\\" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
-                localDirectory = fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItem(mediaInfo.PARENTSHOWID));
-                directoryTools.createNewDirectory(MediaManager.episodePath + "\\" + localDirectory);
-                localDirectory += String.format("\\Season %d",mediaInfo.getSeason());
-                directoryTools.createNewDirectory(MediaManager.episodePath + "\\" + localDirectory);
-                mediaInfo.PATH = "\\" + localDirectory + "\\" + mediaInfo.PATH;
-                newFullFileName = MediaManager.moviePath + mediaInfo.PATH;
+                localDirectory = "\\TV Shows\\" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItem(mediaInfo.PARENTSHOWID));
+                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                localDirectory += String.format("Season %d",mediaInfo.getSeason());
+                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
+                newFullFileName = MediaManager.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
             }

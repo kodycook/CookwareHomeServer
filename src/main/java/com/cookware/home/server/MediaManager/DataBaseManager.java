@@ -55,8 +55,8 @@ public class DatabaseManager {
                     "DOWNLOADED DATE, " +
                     "PATH       TEXT, " +
                     "PARENTID   BIGINT, " +
-                    "PARENTNAME   TEXT, " +
-                    "EPISODE    DECIMAL(4,2), " +
+                    "PARENTNAME TEXT, " +
+                    "EPISODE    TEXT, " +
                     "PRIMARY KEY (ID)" +
                     ")";
             stmt.executeUpdate(sql);
@@ -75,62 +75,92 @@ public class DatabaseManager {
         Connection connection = null;
         Statement stmt = null;
 
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection(this.url);
-            connection.setAutoCommit(false);
-
-            stmt = connection.createStatement();
-            String sql;
-
-            if(info.TYPE.equals(MediaType.EPISODE)){
-                sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
-                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %f, %d, '%s');",
-                        info.ID,
-                        fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'","''"),
-                        info.TYPE.ordinal(),
-                        info.URL,
-                        info.QUALITY,
-                        state.ordinal(),
-                        info.PRIORITY,
-                        java.sql.Date.valueOf(info.RELEASED),
-                        java.sql.Date.valueOf(added),
-                        info.EPISODE,
-                        info.PARENTSHOWID,
-                        fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'","''"));
+        if (checkIfMediaExists(info.ID)){
+            MediaInfo clashedItem = getMediaItem(info.ID);
+            if (clashedItem == null) {
+                log.error("UNKNOWN ERROR");
             }
-            else {
-                sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
-                                "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
-                        info.ID,
-                        fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'","''"),
-                        info.TYPE.ordinal(),
-                        info.URL,
-                        info.QUALITY,
-                        state.ordinal(),
-                        info.PRIORITY,
-                        java.sql.Date.valueOf(info.RELEASED),
-                        java.sql.Date.valueOf(added));
-            }
-
-            log.debug(String.format("SQL Query sent to database: %s", sql));
-            try {
-                stmt.executeUpdate(sql);
-            } catch (Exception e) {
-                log.warn(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
-                        info.toString(),
-                        getMediaItem(info.ID).toString()));
-                return false;
-            }
-
-            stmt.close();
-            connection.commit();
-            connection.close();
-        } catch (Exception e) {
-            log.error(String.format("Error updating Database with: %s", info.toString()), e);
+            log.warn(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
+                    info.toString(),
+                    clashedItem.toString()));
             return false;
         }
-        return true;
+        else {
+            try {
+                Class.forName("org.sqlite.JDBC");
+                connection = DriverManager.getConnection(this.url);
+                connection.setAutoCommit(false);
+
+                stmt = connection.createStatement();
+                String sql;
+
+
+                if (info.TYPE.equals(MediaType.EPISODE)) {
+                    sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
+                                    "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %.2f, %d, '%s');",
+                            info.ID,
+                            fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                            info.TYPE.ordinal(),
+                            info.URL,
+                            info.QUALITY,
+                            state.ordinal(),
+                            info.PRIORITY,
+                            java.sql.Date.valueOf(info.RELEASED),
+                            java.sql.Date.valueOf(added),
+                            info.EPISODE,
+                            info.PARENTSHOWID,
+                            fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'", "''"));
+                } else {
+                    sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
+                                    "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
+                            info.ID,
+                            fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                            info.TYPE.ordinal(),
+                            info.URL,
+                            info.QUALITY,
+                            state.ordinal(),
+                            info.PRIORITY,
+                            java.sql.Date.valueOf(info.RELEASED),
+                            java.sql.Date.valueOf(added));
+                }
+
+                log.debug(String.format("SQL Query sent to database: %s", sql));
+
+                stmt.executeUpdate(sql);
+
+                stmt.close();
+                connection.commit();
+                connection.close();
+            } catch (Exception e) {
+                log.error(String.format("Error updating Database with: %s", info.toString()), e);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public boolean checkIfMediaExists(BigInteger id) {
+        final String queryCheck = String.format("SELECT * FROM MEDIA WHERE ID = %d", id);
+        boolean hasMediaItem = false;
+
+        try {
+            Connection c = DriverManager.getConnection(this.url);
+            Statement stmt = c.createStatement();
+            Class.forName("org.sqlite.JDBC");
+            c.setAutoCommit(false);
+
+            ResultSet rs = stmt.executeQuery(queryCheck);
+            hasMediaItem = rs.next();
+
+            rs.close();
+            stmt.close();
+            c.close();
+        } catch (Exception e) {
+            log.error(String.format("Issue checking if item (%d) is in Data Base", id), e);
+            return true;
+        }
+
+        return hasMediaItem;
     }
 
     public List<MediaInfo> getDownloadQueue() {
@@ -164,7 +194,7 @@ public class DatabaseManager {
                 if (currentMediaInfo.TYPE.equals(MediaType.EPISODE)){
                     currentMediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
                     currentMediaInfo.PARENTSHOWNAME = rs.getString("PARENTNAME");
-                    currentMediaInfo.EPISODE = rs.getFloat("EPISODE");
+                    currentMediaInfo.EPISODE = Float.parseFloat(rs.getString("EPISODE"));
                 }
 
                 mediaQueue.add(currentMediaInfo);

@@ -77,6 +77,13 @@ fabric.properties
 # Database files
 *.db
 
+# Media Files
+*.mp4
+*.mov
+*.flv
+*.wmv
+*.avi
+
 # BlueJ files
 *.ctxt
 

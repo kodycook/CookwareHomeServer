@@ -10,8 +10,9 @@ public class MediaManager {
     private final MediaManagerRunnable mediaManagerRunnable = new MediaManagerRunnable();
     private static final Logger log = Logger.getLogger(MediaManager.class);
     public static String tempPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
-    public static String moviePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\Movies";
-    public static String episodePath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media\\TV"; // WILL IS THIS THE RIGHT WAY TO ACCESS STATIC GLOBAL VARIABLES?
+    public static String finalPath = "\\\\WDMYCLOUDEX2\\Public\\Media";
+//    public static String finalPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
+
 
     public void start(){
         // TODO: Sort out syncronised access to variables

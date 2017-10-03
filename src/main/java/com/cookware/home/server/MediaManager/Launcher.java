@@ -28,8 +28,8 @@ public class Launcher {
         RequestHandler requestHandler = new RequestHandler(mediaManager);
         ClientStub clientStub = new ClientStub();
 
-        requestHandler.start();
         clientStub.start();
+        requestHandler.start();
         mediaManager.start();
     }
 }

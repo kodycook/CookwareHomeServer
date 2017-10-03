@@ -50,7 +50,7 @@ public class RequestHandlerRunnable implements Runnable {
     public void addMedia(Map<String, Object> parameters){
         String url = "";
         int priority = 3;
-        String quality = "MAX";
+        String quality = "MIN";
 
         for (String key : parameters.keySet()){
             if (key.equals("url")){

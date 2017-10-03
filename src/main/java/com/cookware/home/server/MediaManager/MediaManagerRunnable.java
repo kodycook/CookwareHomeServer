@@ -31,7 +31,7 @@ public class MediaManagerRunnable implements Runnable{
     @Override
     public void run()
     {
-        boolean downloadSuccess;
+        // TODO: Covert unfinished downloads in Data Base back to pending
         int index = 0;
         MediaInfo currentMedia;
         MediaInfo tempMedia;
@@ -53,12 +53,11 @@ public class MediaManagerRunnable implements Runnable{
                     index ++;
                 }
                 else {
+                    updateState(currentMedia, DownloadState.DOWNLOADING);
                     tempMedia = downloadManager.downloadMedia(currentMedia);
                     if(tempMedia != null){
                         currentMedia = tempMedia;
                         updateState(currentMedia, DownloadState.TRANSFERRING);
-                        // TODO: Update the path in the Database
-                        // TODO: Add a method to move the media into the correct place and update the path in the database
                         mediaQueue.remove(index);
                     }
                     else {
@@ -90,7 +89,7 @@ public class MediaManagerRunnable implements Runnable{
             log.info(String.format("Retrieved %d pending downloads from Database", tempMediaQueue.size()));
             for (MediaInfo queuedMedia : tempMediaQueue) {
                 mediaQueue.add(queuedMedia);
-                log.info(queuedMedia.toString());
+                log.debug(queuedMedia.toString());
             }
         }
     }
@@ -124,6 +123,7 @@ public class MediaManagerRunnable implements Runnable{
                 episodeInfo = addMediaToDataBase(episodeInfo);
             }
         }
+        log.info(String.format("Finished adding %s to Data Base", info.NAME));
     }
 
 
@@ -131,11 +131,13 @@ public class MediaManagerRunnable implements Runnable{
         WebTools webTools = new WebTools();
         ArrayList<MediaInfo> episodeInfoList = new ArrayList<>();
         final String html = webTools.getWebPageHtml(url);
+        log.debug(String.format("HTML for Tv Show:\n%s",html));
+
         final Document document = Jsoup.parse(html);
         final Elements tvSeasons = document.getElementsByClass("tv_container");
         MediaInfo episodeInfo;
         int seasonNumber, episodeNumber;
-        String episodeText, episodeReleaseDateAsString;
+        String episodeText, episodeReleaseDateAsString, episodeName;
         String[] episodeAttributes;
 
         if(tvSeasons.isEmpty()){ //This means that this media is a Movie
@@ -152,28 +154,41 @@ public class MediaManagerRunnable implements Runnable{
                             episodeText = episode.text();
                             episodeAttributes = episodeText.split(" - ");
                             episodeNumber = Integer.parseInt(episodeAttributes[0].substring(1));
-                            if(episodeAttributes.length != 3){
-                                log.warn(String.format("Skipped S%dE%d at %s due to error parsing details",
+                            if(episodeAttributes.length < 3){
+                                log.warn(String.format("Skipped S%dE%d (%s) at %s due to error parsing details",
                                         seasonNumber,
                                         episodeNumber,
+                                        episodeAttributes[1],
                                         url));
+                                continue;
                             }
-                            else {
-                                episodeReleaseDateAsString = episodeAttributes[2].substring(0,10);
-                                if(episodeNumber != 0) {
-                                    episodeInfo = new MediaInfo();
-                                    episodeInfo.NAME = episodeAttributes[1];
-                                    episodeInfo.URL = webTools.extractBaseURl(url) + episode.getElementsByAttribute("href").attr("href");
-                                    episodeInfo.EPISODE = seasonNumber + ((float) episodeNumber)/100;
-                                    try {
-                                        episodeInfo.RELEASED = LocalDate.parse(episodeReleaseDateAsString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                                    }
-                                    catch (Exception e){
-                                        log.error(e);
-                                    }
-                                    episodeInfoList.add(episodeInfo);
-                                }
+                            if((episodeNumber == 0) || (episodeNumber > 99)){
+                                log.warn(String.format("Skipped S%dE%d (%s) due exceeding episode limits [1-99]",
+                                        seasonNumber,
+                                        episodeNumber,
+                                        episodeAttributes[1],
+                                        url));
+                                continue;
                             }
+
+                            episodeReleaseDateAsString = episodeAttributes[episodeAttributes.length-1].substring(0,10);
+
+                            episodeName = episodeAttributes[1];
+                            for (int i = 2; i <= episodeAttributes.length-2; i++){ // Episode contains " - " in the title
+                                episodeName += " - " + episodeAttributes[i];
+                            }
+
+                            episodeInfo = new MediaInfo();
+                            episodeInfo.NAME = episodeName;
+                            episodeInfo.URL = webTools.extractBaseURl(url) + episode.getElementsByAttribute("href").attr("href");
+                            episodeInfo.EPISODE = seasonNumber + ((float) episodeNumber)/100;
+                            try {
+                                episodeInfo.RELEASED = LocalDate.parse(episodeReleaseDateAsString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                            }
+                            catch (Exception e){
+                                log.error(e);
+                            }
+                            episodeInfoList.add(episodeInfo);
                         }
                     }
                 }

@@ -4,6 +4,7 @@ import com.bitlove.fnv.FNV;
 import org.apache.log4j.Logger;
 
 import java.math.BigInteger;
+import java.time.LocalDate;
 
 /**
  * Created by Kody on 19/09/2017.
@@ -17,15 +18,31 @@ public class FileNameTools {
     }
 
     public BigInteger generateHashFromMediaInfo(MediaInfo info){
-        if((info.NAME != "")&&(info.RELEASED != null)) {
-            String shortMediaName = info.NAME.replaceAll("\\s", "");
-            shortMediaName += "(" + info.RELEASED.getYear() + ")";
-            shortMediaName = removeSpecialCharactersFromString(shortMediaName);
-            return this.stringHasher.fnv1a_32(shortMediaName.getBytes());
+        String fullFileName = getFullFileNameFromMediaInfo(info);
+        return generateHashFromFullFileName(fullFileName);
+    }
+
+
+    public BigInteger generateHashFromFullFileName(String fileName){
+        int fileTypeIndex = fileName.lastIndexOf('.');
+
+        if (fileTypeIndex != -1){
+            fileName = fileName.substring(0,fileTypeIndex);
         }
-        else{
-            return BigInteger.ZERO;
-        }
+
+        return generateHashFromGeneralMediaName(fileName);
+    }
+
+
+    public BigInteger generateHashFromGeneralMediaName(String name){
+        String shortMediaName = name.replaceAll("\\s", "");
+        return generateHashFromShortMediaName(shortMediaName);
+    }
+
+
+    public BigInteger generateHashFromShortMediaName(String shortMediaName){
+        String shortMediaNameWithoutWhiteSpace = removeSpecialCharactersFromString(shortMediaName);
+        return this.stringHasher.fnv1a_32(shortMediaNameWithoutWhiteSpace.getBytes());
     }
 
     public String getFullFileNameFromMediaInfo(MediaInfo mediaInfo){
@@ -38,27 +55,11 @@ public class FileNameTools {
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());
         }else {
-            mediaFileName = mediaFileName = String.format("%s (%d)",
+            mediaFileName = String.format("%s (%d)",
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());
         }
-//        log.error(String.format("Issue creating file name for: %s", mediaInfo.toString()));
-        log.info(mediaFileName);
         return removeSpecialCharactersFromString(mediaFileName);
-    }
-
-    public BigInteger generateHashFromFullFileName(String filePath){
-        String[] seperatedFileName = filePath.split(" - ");
-        String fileName = seperatedFileName[seperatedFileName.length-1];
-        String fileNameWithoutExtension = fileName.substring(0,fileName.lastIndexOf('.'));
-        log.debug(String.format("Generating Hash for: %s",fileNameWithoutExtension));
-
-        return generateHashFromGeneralMediaName(fileNameWithoutExtension);
-    }
-
-    public BigInteger generateHashFromGeneralMediaName(String name){
-        String nameWithoutSpaces = name.replaceAll("\\s", "");
-        return this.stringHasher.fnv1a_32(nameWithoutSpaces.getBytes());
     }
 
     public String removeSpecialCharactersFromString(String inputString){

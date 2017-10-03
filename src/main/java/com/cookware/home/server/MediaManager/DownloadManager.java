@@ -164,14 +164,40 @@ public class DownloadManager {
 
 
     private String selectBestLinkByQuality(List<DownloadLink> mediaLinks, int quality){
-        // TODO: Update this method to accept all qualities
+        if(quality == -1){
+            return selectLinkWithHighestQuality(mediaLinks);
+        }
+        else if (quality == 0){
+            return selectLinkWithLowestQuality(mediaLinks);
+        }
+        else{
+            // TODO: Update this method to accept all qualities
+            log.error("METHOD NOT COMPLETE YET");
+            return "";
+        }
+    }
 
-        int bestQuality = 0;
+
+
+    private String selectLinkWithHighestQuality(List<DownloadLink> mediaLinks){
+        int highestQuality = 0;
         String result = "";
         for (DownloadLink mediaLink:mediaLinks){
-            if(bestQuality < mediaLink.quality){
+            if(highestQuality < mediaLink.quality){
                 result = mediaLink.url;
-                bestQuality = mediaLink.quality;
+                highestQuality = mediaLink.quality;
+            }
+        }
+        return result;
+    }
+
+    private String selectLinkWithLowestQuality(List<DownloadLink> mediaLinks){
+        int lowestQuality = Integer.MAX_VALUE;
+        String result = "";
+        for (DownloadLink mediaLink:mediaLinks){
+            if(lowestQuality > mediaLink.quality){
+                result = mediaLink.url;
+                lowestQuality = mediaLink.quality;
             }
         }
         return result;

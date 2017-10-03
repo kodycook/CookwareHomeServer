@@ -26,35 +26,36 @@ public class ClientStubRunnable implements Runnable{
 
     @Override
     public void run() {
-        String baseUrl = "http://www.primewire.ag";
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.error(String.format("Thread has been interrupted:\n%s", e.getMessage()));
-        }
-
-        String mediaUrl = "";
-        if(this.automate == AutomateLevel.SKIP_SCRAPE){
-            mediaUrl = "http://www.primewire.ag/watch-2793216-Guardians-of-the-Galaxy-Vol-2-online-free";
-
-        }else {
-            String mediaUrlSpecifics = "";
-            boolean firstTimeInLoop = true;
-
-            while(mediaUrlSpecifics.equals("")){
-                if(!firstTimeInLoop && (automate == AutomateLevel.SKIP_SEARCH)){
-                    automate = AutomateLevel.NONE;
-                    firstTimeInLoop = false;
-                }
-                String searchUrl = baseUrl + "/index.php?search_keywords=" + getSearchQuery();
-                mediaUrlSpecifics = scrapeMediaUrlFromSearch(searchUrl);
+        while(true) {
+            String baseUrl = "http://www.primewire.ag";
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                log.error(String.format("Thread has been interrupted:\n%s", e.getMessage()));
             }
 
+            String mediaUrl = "";
+            if (this.automate == AutomateLevel.SKIP_SCRAPE) {
+                mediaUrl = "http://www.primewire.ag/watch-2793216-Guardians-of-the-Galaxy-Vol-2-online-free";
 
-            mediaUrl = baseUrl + mediaUrlSpecifics;
+            } else {
+                String mediaUrlSpecifics = "";
+                boolean firstTimeInLoop = true;
+
+                while (mediaUrlSpecifics.equals("")) {
+                    if (!firstTimeInLoop && (automate == AutomateLevel.SKIP_SEARCH)) {
+                        automate = AutomateLevel.NONE;
+                        firstTimeInLoop = false;
+                    }
+                    String searchUrl = baseUrl + "/index.php?search_keywords=" + getSearchQuery();
+                    mediaUrlSpecifics = scrapeMediaUrlFromSearch(searchUrl);
+                }
+
+                mediaUrl = baseUrl + mediaUrlSpecifics;
+            }
+
+            sendUrlToManager(mediaUrl);
         }
-
-        sendUrlToManager(mediaUrl);
     }
 
     private String getSearchQuery() {
