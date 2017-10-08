@@ -33,7 +33,7 @@ public class FileTransferrerRunnable implements Runnable {
                     if (currentFile.isFile()) {
                         currentFileName = currentFile.getName();
                         currentFileId = fileNameTools.generateHashFromFullFileName(currentFileName);
-                        currentMediaInfo = databaseManager.getMediaItem(currentFileId);
+                        currentMediaInfo = databaseManager.getMediaItemWithMatchedId(currentFileId);
                         if(currentMediaInfo != null){
                             if (currentMediaInfo.STATE.equals(DownloadState.DOWNLOADING)) {
                                 continue;
@@ -68,13 +68,7 @@ public class FileTransferrerRunnable implements Runnable {
     }
 
     public boolean mediaStorageAvailable(){
-        File file = new File(MediaManager.finalPath);
-        if((file.isDirectory())&&(file.exists())){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return directoryTools.checkIfNetworkLocationAvailable(MediaManager.finalPath);
     }
 
     private void transferMedia(MediaInfo mediaInfo){
@@ -100,9 +94,9 @@ public class FileTransferrerRunnable implements Runnable {
                 oldFullFileName = MediaManager.tempPath + "\\" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
-                localDirectory = "\\TV Shows\\" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItem(mediaInfo.PARENTSHOWID));
+                localDirectory = "\\TV Shows\\" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItemWithMatchedId(mediaInfo.PARENTSHOWID));
                 directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
-                localDirectory += String.format("Season %d",mediaInfo.getSeason());
+                localDirectory += String.format("\\Season %d",mediaInfo.getSeason());
                 directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
                 mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
                 newFullFileName = MediaManager.finalPath + mediaInfo.PATH;

@@ -24,18 +24,25 @@ public class DirectoryTools {
         return listOfFiles;
     }
 
+
+    //TODO: Finish Implementing this (getAllFilesInDirectory_Recursive) method
     public String[] getAllFilesInDirectory_Recursive(String DirectoryPath){
         String[] listOfFiles = {};
-        //TODO: Finish Implementing this (getAllFilesInDirectory_Recursive) method
 
         return listOfFiles;
     }
 
-    public boolean checkIfNetworkLocationAvailable(Object ojb){
-        // TODO: Finish implementing this (checkIfNetworkLocationAvailable) method
-        log.warn("USING AN UNFINISHED METHOD");
-        return true;
+
+    public boolean checkIfNetworkLocationAvailable(String path){
+        File file = new File(path);
+        if((file.isDirectory())&&(file.exists())){
+            return true;
+        }
+        else {
+            return false;
+        }
     }
+
 
     public boolean checkIfdirectorityexists (String directoryName){
         File directory = new File(directoryName);
@@ -43,11 +50,11 @@ public class DirectoryTools {
     }
 
     public boolean createNewDirectory(String directoryName){
-        log.debug(directoryName);
         if(checkIfdirectorityexists(directoryName)){
             return true;
         }
         try{
+            log.debug(String.format("Created new Directory: %s",directoryName));
             new File(directoryName).mkdir();
             return true;
         }

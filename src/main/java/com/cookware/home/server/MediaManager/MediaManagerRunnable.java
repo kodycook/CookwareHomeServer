@@ -6,9 +6,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.print.attribute.standard.Media;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -16,7 +19,8 @@ import java.util.List;
  * Created by Kody on 5/09/2017.
  */
 public class MediaManagerRunnable implements Runnable{
-    private final List<MediaInfo> mediaQueue = new ArrayList<>();
+    // TODO: Add in a Statistics Manager
+    private final List<MediaInfo> mediaQueue = Collections.synchronizedList(new ArrayList<MediaInfo>());
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager = new DatabaseManager("media.db");
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
@@ -25,28 +29,34 @@ public class MediaManagerRunnable implements Runnable{
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
 
     public MediaManagerRunnable(){
-        databaseManager.initialiseDataBase();
+        databaseManager.initialise();
     }
 
     @Override
     public void run()
     {
-        // TODO: Covert unfinished downloads in Data Base back to pending
         int index = 0;
         MediaInfo currentMedia;
         MediaInfo tempMedia;
+        resetFailedDownloadMediaItems();
         retrieveQueuedMediaFromDatabase(mediaQueue);
+
 
         fileTransferrer.start();
 
+
         while(true)
         {
+            // TODO: Write the Scheduler
             if (!isDownloading) {
                 break;
             }
 
+
             while(mediaQueue.size()>index){
-                // TODO: Add a method to sort the media queue by priority
+
+
+                sortMediaQueue();
 
                 currentMedia = mediaQueue.get(index);
                 if (currentMedia.TYPE.equals(MediaType.TV)){
@@ -79,7 +89,43 @@ public class MediaManagerRunnable implements Runnable{
 
     public void updateState(MediaInfo mediaInfo, DownloadState downloadState){
         mediaInfo.STATE = downloadState;
+
         databaseManager.updateState(mediaInfo.ID, downloadState);
+    }
+
+
+    private void resetFailedDownloadMediaItems(){
+        List<MediaInfo> halfDownloadedMedia = databaseManager.getMediaItemsWithState(DownloadState.DOWNLOADING);
+        List<MediaInfo> failedMedia = databaseManager.getMediaItemsWithState(DownloadState.FAILED);
+
+        for(MediaInfo mediaInfo: halfDownloadedMedia){
+            updateState(mediaInfo, DownloadState.PENDING);
+            databaseManager.updatePriority(mediaInfo.ID, 5);
+            log.info(String.format("Half finished download reset: %s", mediaInfo.toString()));
+        }
+
+        for(MediaInfo mediaInfo: failedMedia){
+            updateState(mediaInfo, DownloadState.PENDING);
+            databaseManager.updatePriority(mediaInfo.ID, 5);
+            log.info(String.format("Half finished download reset: %s", mediaInfo.toString()));
+        }
+    }
+
+    private void sortMediaQueue(){ // ASK WILL HOW HE UNIT TEST'S PRIVATE CLASSES
+        // TODO: Add Iterator to remove elements out of tempmedia queue as it sorts
+        List<MediaInfo>  tempMediaQueue = new ArrayList<MediaInfo>();
+        for (MediaInfo currentItem : mediaQueue){
+            tempMediaQueue.add(currentItem);
+        }
+
+        mediaQueue.clear();
+        for (int currentPriority = 0; currentPriority <= 5; currentPriority++){
+            for (MediaInfo currentItem : tempMediaQueue){
+                if (currentItem.PRIORITY == currentPriority){
+                    mediaQueue.add(currentItem);
+                }
+            }
+        }
     }
 
 
@@ -99,8 +145,6 @@ public class MediaManagerRunnable implements Runnable{
         final WebTools webTools = new WebTools();
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
-
-        // TODO: Clean up the writing to the database and the handling of MediaInfo Objects
 
         info.URL = url;
         info.QUALITY = qualityStringIntoInteger(qualityString);

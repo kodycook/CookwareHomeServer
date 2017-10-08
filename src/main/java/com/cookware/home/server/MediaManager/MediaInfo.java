@@ -11,22 +11,23 @@ import java.time.LocalDate;
 public class MediaInfo {
     private static final Logger log = Logger.getLogger(MediaInfo.class);
     private final boolean printLong = false;
-    public BigInteger ID;
-    public String URL;
-    public String NAME;
-    public MediaType TYPE;
-    public DownloadState STATE;
-    public int PRIORITY;
-    public int QUALITY;
-    public LocalDate RELEASED;
-    public LocalDate ADDED;
-    public String PATH;
-    public BigInteger PARENTSHOWID;
-    public String PARENTSHOWNAME;
+    public BigInteger ID = new BigInteger("0");
+    public String URL = "";
+    public String NAME = "";
+    public MediaType TYPE = null;
+    public DownloadState STATE = null;
+    public int PRIORITY = Integer.MIN_VALUE;
+    public int QUALITY = Integer.MIN_VALUE;
+    public LocalDate RELEASED = null;
+    public LocalDate ADDED = null;
+    public String PATH = "";
+    public BigInteger PARENTSHOWID = new BigInteger("0");
+    public String PARENTSHOWNAME = "";
     public float EPISODE = -1;
 
+
     public String toString() {
-        if(printLong == true){
+        if(printLong){
             return toStringLong();
         }
         else{
@@ -179,11 +180,85 @@ public class MediaInfo {
 
     public int getEpisode(){
         if (this.EPISODE != -1){
-            return (int) ((this.EPISODE-Math.floor(this.EPISODE))*100);
+            return (int) (Math.round(this.EPISODE*100)-getSeason()*100);
         }
             else {
             log.error(String.format("Failed to get Episode Number for %s", this.NAME));
             return -1;
         }
+    }
+
+    public boolean isComplete(){
+        if(this.TYPE.equals(MediaType.EPISODE)){
+            return isCompleteEpisode();
+        }
+        else if(this.TYPE.equals(MediaType.TV)){
+            return isCompleteMovieOrTv();
+        }
+        else if(this.TYPE.equals(MediaType.MOVIE)){
+            return isCompleteMovieOrTv();
+        }
+        else {
+            return false;
+        }
+    }
+
+    private boolean isCompleteEpisode(){
+        if(this.ID.equals(new BigInteger("0"))){
+            return false;
+        }
+        if(this.URL.equals("")){
+            return false;
+        }
+        if(this.NAME.equals("")){
+            return false;
+        }
+        if(this.STATE == null){
+            return false;
+        }
+        if(this.PRIORITY == Integer.MIN_VALUE){
+            return false;
+        }
+        if(this.QUALITY == Integer.MIN_VALUE){
+            return false;
+        }
+        if(this.RELEASED == null){
+            return false;
+        }
+        if(this.PARENTSHOWID.equals(new BigInteger("0"))){
+            return false;
+        }
+        if(this.PARENTSHOWNAME.equals("")){
+            return false;
+        }
+        if(this.EPISODE == -1){
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isCompleteMovieOrTv(){
+        if(this.ID.equals(new BigInteger("0"))){
+            return false;
+        }
+        if(this.URL.equals("")){
+            return false;
+        }
+        if(this.NAME.equals("")){
+            return false;
+        }
+        if(this.STATE == null){
+            return false;
+        }
+        if(this.PRIORITY == Integer.MIN_VALUE){
+            return false;
+        }
+        if(this.QUALITY == Integer.MIN_VALUE){
+            return false;
+        }
+        if(this.RELEASED == null){
+            return false;
+        }
+        return true;
     }
 }

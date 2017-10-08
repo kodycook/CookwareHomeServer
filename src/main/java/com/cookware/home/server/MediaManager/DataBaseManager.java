@@ -16,6 +16,7 @@ public class DatabaseManager {
     private FileNameTools fileNameTools = new FileNameTools();
     private DirectoryTools directoryTools = new DirectoryTools();
     private final Logger log = Logger.getLogger(DatabaseManager.class);
+    private final List<DatabaseEntryAttribute> databaseAttributes  = new ArrayList<DatabaseEntryAttribute>();
     private String fileName;
     private String url;
 
@@ -23,60 +24,92 @@ public class DatabaseManager {
         this.fileName = mFileName;
     }
 
-    public void initialiseDataBase() {
+    public void initialise() {
+        databaseAttributes.add(new DatabaseEntryAttribute("ID", "BIGINT NOT NULL", BigInteger.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("NAME", "TEXT NOT NULL", String.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("TYPE", "TINYINT NOT NULL", Integer.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("URL", "TEXT NOT NULL", String.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("QUALITY", "SMALLINT NOT NULL", Integer.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("STATE", "TINYINT NOT NULL", Integer.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("PRIORITY", "TINYINT NOT NULL", Integer.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("RELEASED", "DATE NOT NULL", LocalDate.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("ADDED", "DATE NOT NULL", LocalDate.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("DOWNLOADED", "DATE", LocalDate.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("PATH", "TEXT", String.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("PARENTID", "BIGINT", BigInteger.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("PARENTNAME", "TEXT", String.class));
+        databaseAttributes.add(new DatabaseEntryAttribute("EPISODE", "TEXT", float.class));
+
         directoryTools.createNewDirectory("data");
 
-        Connection conn = null;
+        initialiseDatabase();
+    }
+
+
+    public List<MediaInfo> getDownloadQueue() {
+        return getMediaItemsWithState(DownloadState.PENDING);
+    }
+
+
+    public List<MediaInfo> getMediaItemsWithState(DownloadState downloadState){
+        return getAllDataBaseEntriesWithMatchedCriteria("STATE", downloadState.ordinal());
+    }
+
+
+    public void updateState(BigInteger mediaId, DownloadState downloadState){
+
+        updateDatabaseValue(mediaId, "STATE", downloadState.ordinal());
+    }
+
+
+    public void updatePath(BigInteger mediaId, String path){
+
+        updateDatabaseValue(mediaId, "PATH", fileNameTools.removeSpecialCharactersFromString(path));
+    }
+
+
+    public void updateQuality(BigInteger mediaId, int quality){
+
+        updateDatabaseValue(mediaId, "QUALITY", quality);
+    }
+
+    public void updatePriority(BigInteger mediaId, int priority){
+
+        // TODO: Uncomment this for final deployment
+//        updateDatabaseValue(mediaId, "QUALITY", priority);
+    }
+
+
+    private void initialiseDatabase(){
+        boolean querySucceeded = false;
+
         this.url = "jdbc:sqlite:data/" + fileName;
 
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(this.url);
-            if (conn != null) {
-                DatabaseMetaData meta = conn.getMetaData();
+        if(!checkIfDatabaseExists()) {
+            String sql = "CREATE TABLE MEDIA(";
+            for (DatabaseEntryAttribute currentDatabaseEntryAttribute : databaseAttributes) {
+                sql += String.format("%s %s, ", currentDatabaseEntryAttribute.NAME, currentDatabaseEntryAttribute.INITPARAM);
             }
-        } catch (Exception e) {
-            this.log.error("Database not successfully opened");
-            System.exit(0);
-        }
+            sql += String.format("PRIMARY KEY (%s))", databaseAttributes.get(0).NAME);
 
-        try {
-            Statement stmt = conn.createStatement();
-            String sql = "CREATE TABLE MEDIA(" +
-                    "ID         BIGINT      NOT NULL, " +
-                    "NAME       TEXT        NOT NULL, " +
-                    "TYPE       TINYINT     NOT NULL, " +
-                    "URL        TEXT        NOT NULL, " +
-                    "QUALITY    SMALLINT    NOT NULL, " +
-                    "STATE      TINYINT     NOT NULL, " +
-                    "PRIORITY   TINYINT     NOT NULL, " +
-                    "RELEASED   DATE        NOT NULL, " +
-                    "ADDED      DATE        NOT NULL, " +
-                    "DOWNLOADED DATE, " +
-                    "PATH       TEXT, " +
-                    "PARENTID   BIGINT, " +
-                    "PARENTNAME TEXT, " +
-                    "EPISODE    TEXT, " +
-                    "PRIMARY KEY (ID)" +
-                    ")";
-            stmt.executeUpdate(sql);
-            stmt.close();
-            conn.close();
-            this.log.info("Created new Database");
-        } catch (Exception e) {
-            this.log.info("Database already initialised");
+            querySucceeded = sendSqlQuery(sql);
+
+            if (!querySucceeded) {
+                log.error("Failed to initialise Database");
+                System.exit(1);
+            }
+            log.error("Created new Database");
         }
-        this.log.info("Successfully opened database");
+        log.info("Successfully opened database");
     }
+
 
     public boolean addMediaToDatabase(MediaInfo info) {
         final DownloadState state = DownloadState.PENDING;
         final LocalDate added = LocalDate.now();
-        Connection connection = null;
-        Statement stmt = null;
 
-        if (checkIfMediaExists(info.ID)){
-            MediaInfo clashedItem = getMediaItem(info.ID);
+        if (checkIfMediaExists(info.ID)) {
+            MediaInfo clashedItem = getMediaItemWithMatchedId(info.ID);
             if (clashedItem == null) {
                 log.error("UNKNOWN ERROR");
             }
@@ -85,146 +118,284 @@ public class DatabaseManager {
                     clashedItem.toString()));
             return false;
         }
-        else {
-            try {
-                Class.forName("org.sqlite.JDBC");
-                connection = DriverManager.getConnection(this.url);
-                connection.setAutoCommit(false);
 
-                stmt = connection.createStatement();
-                String sql;
+        String sql;
+        if (info.TYPE.equals(MediaType.EPISODE)) {
+            sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
+                            "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %.2f, %d, '%s');",
+                    info.ID,
+                    fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                    info.TYPE.ordinal(),
+                    info.URL,
+                    info.QUALITY,
+                    state.ordinal(),
+                    info.PRIORITY,
+                    java.sql.Date.valueOf(info.RELEASED),
+                    java.sql.Date.valueOf(added),
+                    info.EPISODE,
+                    info.PARENTSHOWID,
+                    fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'", "''"));
+        } else {
+            sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
+                            "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
+                    info.ID,
+                    fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                    info.TYPE.ordinal(),
+                    info.URL,
+                    info.QUALITY,
+                    state.ordinal(),
+                    info.PRIORITY,
+                    java.sql.Date.valueOf(info.RELEASED),
+                    java.sql.Date.valueOf(added));
+        }
+
+        return sendSqlQuery(sql);
+    }
 
 
-                if (info.TYPE.equals(MediaType.EPISODE)) {
-                    sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
-                                    "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %.2f, %d, '%s');",
-                            info.ID,
-                            fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
-                            info.TYPE.ordinal(),
-                            info.URL,
-                            info.QUALITY,
-                            state.ordinal(),
-                            info.PRIORITY,
-                            java.sql.Date.valueOf(info.RELEASED),
-                            java.sql.Date.valueOf(added),
-                            info.EPISODE,
-                            info.PARENTSHOWID,
-                            fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'", "''"));
-                } else {
-                    sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
-                                    "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
-                            info.ID,
-                            fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
-                            info.TYPE.ordinal(),
-                            info.URL,
-                            info.QUALITY,
-                            state.ordinal(),
-                            info.PRIORITY,
-                            java.sql.Date.valueOf(info.RELEASED),
-                            java.sql.Date.valueOf(added));
-                }
+    public void updateDatabaseValue(BigInteger id, String key, Object value){
+        DatabaseEntryAttribute associatedDatabaseEntryAttribute = getDatabaseAttributeByName(key);
+        String databaseAttributeValueString = getDatabaseAttributeValueAsString(associatedDatabaseEntryAttribute, value);
 
-                log.debug(String.format("SQL Query sent to database: %s", sql));
+        // ASK WILL IS IT MORE IMPORTANT TO INITIALISE VARIABLES AS FINAL OR TO DECLARE THEM AT THE START OF A METHOD (SOMETIMES YOU CANT DO BOTH)
+        final String sql = String.format("UPDATE MEDIA SET %s = %s where ID = %d ;",
+                associatedDatabaseEntryAttribute.NAME,
+                databaseAttributeValueString,
+                id);
 
-                stmt.executeUpdate(sql);
+        final boolean querySucceeded = sendSqlQuery(sql);
 
-                stmt.close();
-                connection.commit();
-                connection.close();
-            } catch (Exception e) {
-                log.error(String.format("Error updating Database with: %s", info.toString()), e);
-                return false;
+        if (!querySucceeded) {
+            log.error(String.format("Failed to update Database ID: %d Attribute: %s Value: %s",id, key, databaseAttributeValueString));
+        }
+    }
+
+
+    // TODO: Have to finish this (updateEntireDatabaseEntry) method
+    public void updateEntireDatabaseEntry(MediaInfo mediaInfo){
+    }
+
+
+    public Object getMediaItemValue(BigInteger id, String key){
+        String query = String.format("SELECT %s " +
+                "FROM MEDIA " +
+                "WHERE ID = %d ;",key, id);
+
+        List<MediaInfo> mediaInfo = receiveSqlRequest(query);
+
+        return getDataBaseObjectFromMediaInfo(mediaInfo.get(0), key);
+    }
+
+
+    public MediaInfo getMediaItemWithMatchedId(BigInteger id){
+        List<MediaInfo> mediaInfoList;
+
+        String query = String.format("SELECT * " +
+                        "FROM MEDIA " +
+                        "WHERE ID = %d ;",id);
+
+        mediaInfoList = receiveSqlRequest(query);
+
+        if(mediaInfoList.isEmpty()){
+            log.error(String.format("Media Item ID: %d not in database", id));
+            return null;
+        }
+
+        return mediaInfoList.get(0);
+    }
+
+
+    public List<MediaInfo> getAllDataBaseEntriesWithMatchedCriteria(String key, Object value){
+        final List<MediaInfo> matchedMediaInfo = new ArrayList<MediaInfo>();
+        final DatabaseEntryAttribute associatedDatabaseEntryAttribute = getDatabaseAttributeByName(key);
+        final String databaseAttributeValueString = getDatabaseAttributeValueAsString(associatedDatabaseEntryAttribute, value);
+        List<MediaInfo> result = null;
+
+        if(associatedDatabaseEntryAttribute != null) {
+            final String query = String.format("SELECT * " +
+                            "FROM MEDIA " +
+                            "WHERE %s = %s",
+                    associatedDatabaseEntryAttribute.NAME,
+                    databaseAttributeValueString);
+
+            result = receiveSqlRequest(query);
+        }
+        return result;
+    }
+
+
+    private DatabaseEntryAttribute getDatabaseAttributeByName(String name){
+        DatabaseEntryAttribute associatedDatebaseEntryAttribute;
+        for(DatabaseEntryAttribute currentDatabaseEntryAttribute: databaseAttributes){
+            if (currentDatabaseEntryAttribute.NAME.equals(name)){
+                associatedDatebaseEntryAttribute = currentDatabaseEntryAttribute;
+                return associatedDatebaseEntryAttribute;
             }
-            return true;
         }
+        log.error(String.format("No database entry attribute found for %s", name));
+        return null;
     }
 
-    public boolean checkIfMediaExists(BigInteger id) {
-        final String queryCheck = String.format("SELECT * FROM MEDIA WHERE ID = %d", id);
-        boolean hasMediaItem = false;
 
+    public Object getDataBaseObjectFromMediaInfo(MediaInfo mediaInfo, String name){
+
+        if (name.equals("ID")){
+            return mediaInfo.ID;
+        }
+        if (name.equals("NAME")){
+            return mediaInfo.NAME;
+        }
+        if (name.equals("TYPE")){
+            return mediaInfo.TYPE;
+        }
+        if (name.equals("URL")){
+            return mediaInfo.URL;
+        }
+        if (name.equals("QUALITY")){
+            return mediaInfo.QUALITY;
+        }
+        if (name.equals("STATE")){
+            return mediaInfo.STATE;
+        }
+        if (name.equals("PRIORITY")){
+            return mediaInfo.PRIORITY;
+        }
+        if (name.equals("RELEASED")){
+            return mediaInfo.RELEASED;
+        }
+        if (name.equals("ADDED")){
+            return mediaInfo.ADDED;
+        }
+        if (name.equals("PATH")){
+            return mediaInfo.PATH;
+        }
+        if (name.equals("PARENTID")){
+            return mediaInfo.PARENTSHOWID;
+        }
+        if (name.equals("PARENTNAME")){
+            return mediaInfo.PARENTSHOWNAME;
+        }
+        if (name.equals("EPISODE")){
+            return mediaInfo.EPISODE;
+        }
+        log.error(String.format("Could not find MediaInfo attribute related to '%s'", name));
+        return null;
+    }
+
+
+    private String getDatabaseAttributeValueAsString(DatabaseEntryAttribute associatedDatabaseEntryAttribute, Object value) {
+        String databaseAttributeValueAsString = null;
         try {
-            Connection c = DriverManager.getConnection(this.url);
-            Statement stmt = c.createStatement();
+            if (associatedDatabaseEntryAttribute.DATATYPE.equals(String.class)) {
+                return String.format("'%s'", (String) value);
+            }
+            if (associatedDatabaseEntryAttribute.DATATYPE.equals(BigInteger.class)) {
+                return String.format("%d", (BigInteger) value);
+            }
+            if (associatedDatabaseEntryAttribute.DATATYPE.equals(Integer.class)) {
+                return String.format("%d", (Integer) value);
+            }
+            if (associatedDatabaseEntryAttribute.DATATYPE.equals(LocalDate.class)) {
+                return String.format("'%s'", Date.valueOf((LocalDate) value));
+            }
+            if (associatedDatabaseEntryAttribute.DATATYPE.equals(float.class)) {
+                return String.format("%02f", (float) value);
+            }
+        }
+        catch (ClassCastException e){
+            log.error("Failed to cast value", e);
+        }
+        return null;
+    }
+
+
+    private synchronized boolean checkIfDatabaseExists(){
+        Connection conn = null;
+        boolean exists = false;
+        try {
             Class.forName("org.sqlite.JDBC");
-            c.setAutoCommit(false);
+            conn = DriverManager.getConnection(this.url);
 
-            ResultSet rs = stmt.executeQuery(queryCheck);
-            hasMediaItem = rs.next();
+            DatabaseMetaData meta = conn.getMetaData();
+            ResultSet res = meta.getTables(null, null, "MEDIA",
+                    new String[] {"TABLE"});
 
-            rs.close();
-            stmt.close();
-            c.close();
+            if(res.next()){
+                exists = true;
+            }
+            else{
+                exists = false;
+            }
+
+            conn.close();
+
         } catch (Exception e) {
-            log.error(String.format("Issue checking if item (%d) is in Data Base", id), e);
-            return true;
+            log.error("Issue checking if Database exists", e);
+            System.exit(1);
         }
-
-        return hasMediaItem;
+        return exists;
     }
 
-    public List<MediaInfo> getDownloadQueue() {
 
-        List<MediaInfo> mediaQueue = new ArrayList<>();
-        MediaInfo currentMediaInfo;
-        Connection c = null;
+    private boolean checkIfMediaExists(BigInteger id) {
+        final String query = String.format("SELECT * FROM MEDIA WHERE ID = %d ;", id);
+        final List<MediaInfo> mediaItems;
+
+        mediaItems = receiveSqlRequest(query);
+
+        if(mediaItems.isEmpty()){
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+
+    private synchronized boolean sendSqlQuery(String query){
+        Connection conn = null;
         Statement stmt = null;
+
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection(this.url);
-            c.setAutoCommit(false);
+            conn = DriverManager.getConnection(this.url);
+            conn.setAutoCommit(false);
 
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * " +
-                    "FROM MEDIA " +
-                    "WHERE STATE = 1 ;");
+            log.debug(String.format("SQL sent to Database: \"%s\"", query));
 
+            stmt = conn.createStatement();
+            stmt.executeUpdate(query);
+            conn.commit();
+
+            stmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            log.error(e);
+            return false;
+        }
+        return true;
+    }
+
+
+    private synchronized List<MediaInfo> receiveSqlRequest(String query) {
+        List<MediaInfo> extractedMediaInfo = new ArrayList<MediaInfo>();
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(this.url);
+            conn.setAutoCommit(false);
+
+            log.debug(String.format("SQL sent to Database: \"%s\"", query));
+
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(query);
 
             while (rs.next()) {
-                currentMediaInfo = new MediaInfo();
-                currentMediaInfo.ID = new BigInteger(rs.getString("ID"));
-                currentMediaInfo.NAME = rs.getString("NAME");
-                currentMediaInfo.TYPE = MediaType.values()[rs.getInt("TYPE")];
-                currentMediaInfo.STATE = DownloadState.values()[rs.getInt("STATE")];
-                currentMediaInfo.URL = rs.getString("URL");
-                currentMediaInfo.QUALITY = rs.getInt("QUALITY");
-                currentMediaInfo.PRIORITY = rs.getInt("PRIORITY");
-                currentMediaInfo.RELEASED = LocalDate.parse(rs.getString("RELEASED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                currentMediaInfo.PATH = rs.getString("PATH");
-                if (currentMediaInfo.TYPE.equals(MediaType.EPISODE)){
-                    currentMediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
-                    currentMediaInfo.PARENTSHOWNAME = rs.getString("PARENTNAME");
-                    currentMediaInfo.EPISODE = Float.parseFloat(rs.getString("EPISODE"));
-                }
-
-                mediaQueue.add(currentMediaInfo);
-            }
-            rs.close();
-            stmt.close();
-            c.close();
-        } catch (Exception e) {
-            log.error("Cannot extract queued media from Database", e);
-        }
-        return mediaQueue;
-    }
-
-    public MediaInfo getMediaItem(BigInteger mediaID){
-        MediaInfo mediaInfo = null;
-        Connection c = null;
-        Statement stmt = null;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection(this.url);
-            c.setAutoCommit(false);
-
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery(String.format("SELECT * " +
-                    "FROM MEDIA " +
-                    "WHERE ID = %d ;",
-                    mediaID));
-
-            if (rs.next()) {
-                mediaInfo = new MediaInfo();
+                MediaInfo mediaInfo = new MediaInfo();
                 mediaInfo.ID = new BigInteger(rs.getString("ID"));
                 mediaInfo.NAME = rs.getString("NAME");
                 mediaInfo.TYPE = MediaType.values()[rs.getInt("TYPE")];
@@ -235,90 +406,36 @@ public class DatabaseManager {
                 mediaInfo.RELEASED = LocalDate.parse(rs.getString("RELEASED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 mediaInfo.ADDED = LocalDate.parse(rs.getString("ADDED"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 mediaInfo.PATH = rs.getString("PATH");
-                if (mediaInfo.TYPE.equals(MediaType.EPISODE)){
+                if (mediaInfo.TYPE.equals(MediaType.EPISODE)) {
                     mediaInfo.PARENTSHOWID = new BigInteger(rs.getString("PARENTID"));
                     mediaInfo.PARENTSHOWNAME = rs.getString("PARENTNAME");
                     mediaInfo.EPISODE = rs.getFloat("EPISODE");
                 }
-            }
-            else {
-                log.error(String.format("Could not find requested item in database - ID:%d", mediaID));
-                return null;
+
+                extractedMediaInfo.add(mediaInfo);
             }
 
-
-            rs.close();
             stmt.close();
-            c.close();
-        } catch (Exception e) {
-            log.error("Cannot extract media from database", e);
+            conn.close();
+
         }
-        return mediaInfo;
+        catch(Exception e) {
+            log.error(e);
+        }
+
+        return extractedMediaInfo;
     }
 
 
-    public void updateState(BigInteger mediaId, DownloadState downloadState){
+        private class DatabaseEntryAttribute{
+        String NAME;
+        String INITPARAM;
+        Class DATATYPE;
 
-        Connection c = null;
-        Statement stmt = null;
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection(this.url);
-            c.setAutoCommit(false);
-
-            stmt = c.createStatement();
-            String sql = String.format("UPDATE MEDIA SET STATE = %d where ID=%d;",downloadState.ordinal(), mediaId);
-            stmt.executeUpdate(sql);
-
-            c.commit();
-            stmt.close();
-            c.close();
-
-            log.debug(String.format("SQL sent to Database: \"%s\"", sql));
-        } catch ( Exception e ) {
-            log.error(String.format("Failed to update database - ID:%d",mediaId),e);
+        public DatabaseEntryAttribute(String mName, String mInitialisationParam, Class mDataType){
+            this.NAME = mName;
+            this.INITPARAM = mInitialisationParam;
+            this.DATATYPE = mDataType;
         }
     }
-
-    // TODO: Modify function to be able to update any attribute
-    public void updatePath(BigInteger mediaId, String path){
-
-        Connection c = null;
-        Statement stmt = null;
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection(this.url);
-            c.setAutoCommit(false);
-
-            stmt = c.createStatement();
-            String sql = String.format("UPDATE MEDIA SET PATH = '%s' where ID=%d;",
-                    fileNameTools.removeSpecialCharactersFromString(path),
-                    mediaId);
-            stmt.executeUpdate(sql);
-
-            c.commit();
-            stmt.close();
-            c.close();
-
-            log.debug(String.format("SQL sent to Database: \"%s\"", sql));
-        } catch ( Exception e ) {
-            log.info(fileNameTools.removeSpecialCharactersFromString(path));
-            log.error("Failed to update database",e);
-        }
-    }
-
-
-    public void updateEntireMediaEntry(MediaInfo mediaInfo){
-        // TODO: Implement this (updateEntireMediaEntry) method
-        log.warn("USING UNFINISHED METHOD");
-        return;
-    }
-
-    public void upadateFieldOfEntry(BigInteger mediaId, String fieldName, Object fieldValue){
-        // TODO: Implement this (upadateFieldOfEntry) method
-        log.warn("USING UNFINISHED METHOD");
-    }
-
 }

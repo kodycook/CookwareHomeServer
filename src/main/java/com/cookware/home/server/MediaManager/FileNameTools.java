@@ -29,7 +29,6 @@ public class FileNameTools {
         if (fileTypeIndex != -1){
             fileName = fileName.substring(0,fileTypeIndex);
         }
-
         return generateHashFromGeneralMediaName(fileName);
     }
 
@@ -48,10 +47,10 @@ public class FileNameTools {
     public String getFullFileNameFromMediaInfo(MediaInfo mediaInfo){
         String mediaFileName = "";
         if(mediaInfo.TYPE.equals(MediaType.EPISODE)){
-            mediaFileName = String.format("%s - S%dE%d - %s (%d)",
+            mediaFileName = String.format("%s - S%02dE%02d - %s",
                     mediaInfo.PARENTSHOWNAME,
-                    (int) Math.floor(mediaInfo.EPISODE),
-                    (int) ((mediaInfo.EPISODE-Math.floor(mediaInfo.EPISODE))*100),
+                    mediaInfo.getSeason(),
+                    mediaInfo.getEpisode(),
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());
         }else {

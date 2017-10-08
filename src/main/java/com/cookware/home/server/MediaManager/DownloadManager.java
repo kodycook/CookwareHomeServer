@@ -27,8 +27,10 @@ import java.util.regex.Pattern;
  * Created by Kody on 13/09/2017.
  */
 public class DownloadManager {
-    // TODO: Convert all System.out.print statements to log.info
-    // TODO Implement interfaces to create different versions of the web scrapers
+    // TODO: Add returns to identify failed downloads
+    // TODO: Add logs to announce the progress of downloads
+    // TODO: Add timeout method on downloads
+    // TODO: Implement interfaces to create different versions of the web scrapers
     private static final Logger log = Logger.getLogger(DownloadManager.class);
     private final WebTools webTools = new WebTools();
     private final FileNameTools fileNameTools = new FileNameTools();
@@ -41,7 +43,8 @@ public class DownloadManager {
 
     public MediaInfo downloadMedia(MediaInfo mediaInfo){
         boolean downloadSuccess;
-        final String embeddedMediaUrl = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
+        final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
+        mediaInfo.QUALITY = embeddedMediaUrlAndQuality.quality;
         mediaInfo.PATH = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
         if (mediaInfo.PATH.equals("")){
             return null;
@@ -50,8 +53,9 @@ public class DownloadManager {
         // TODO: Change newDownload to take in MediaInfo as a parameter to properly construct filenames
 
         databaseManager.updatePath(mediaInfo.ID, (mediaInfo.PATH));
+        databaseManager.updateQuality(mediaInfo.ID, mediaInfo.QUALITY);
         // TODO: Change state of media to "DOWNLOADING"
-        downloadSuccess = newDownload(embeddedMediaUrl, mediaInfo.PATH, mediaInfo.TYPE);
+        downloadSuccess = newDownload(embeddedMediaUrlAndQuality.url, mediaInfo.PATH, mediaInfo.TYPE);
         if(!downloadSuccess){
             log.error(String.format("Issue downloading: %s",mediaInfo.toString()));
             return null;
@@ -61,15 +65,13 @@ public class DownloadManager {
         return mediaInfo;
     }
 
-    private String bridgeToVideoMe(String url, int quality){
+    private DownloadLink bridgeToVideoMe(String url, int quality){
         String html = webTools.getWebPageHtml(url);
         String videoMeUrl = webTools.extractBaseURl(url) + findVideoMeLinkInHtml(html);
         String redirectedUrl = webTools.getRedirectedUrl(videoMeUrl);
         List<DownloadLink> mediaDownloadLinks = extractAllMediaUrls(redirectedUrl);
-        String embeddedMediaUrl = selectBestLinkByQuality(mediaDownloadLinks, quality);
 
-
-        return embeddedMediaUrl;
+        return selectBestLinkByQuality(mediaDownloadLinks, quality);
     }
 
 
@@ -91,8 +93,8 @@ public class DownloadManager {
                 try{
                     site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
                 }catch(Exception e){
+                    log.error(e);
                 }
-//                System.out.println(String.format("Op %d: %s", i, site));
                 if(site.equals("thevideo.me")){
                     url = matchedLink.getElementsByAttribute("href").attr("href");
                     break;
@@ -163,7 +165,7 @@ public class DownloadManager {
     }
 
 
-    private String selectBestLinkByQuality(List<DownloadLink> mediaLinks, int quality){
+    private DownloadLink selectBestLinkByQuality(List<DownloadLink> mediaLinks, int quality){
         if(quality == -1){
             return selectLinkWithHighestQuality(mediaLinks);
         }
@@ -173,30 +175,30 @@ public class DownloadManager {
         else{
             // TODO: Update this method to accept all qualities
             log.error("METHOD NOT COMPLETE YET");
-            return "";
+            return null;
         }
     }
 
 
 
-    private String selectLinkWithHighestQuality(List<DownloadLink> mediaLinks){
+    private DownloadLink selectLinkWithHighestQuality(List<DownloadLink> mediaLinks){
         int highestQuality = 0;
-        String result = "";
+        DownloadLink result = null;
         for (DownloadLink mediaLink:mediaLinks){
             if(highestQuality < mediaLink.quality){
-                result = mediaLink.url;
+                result = mediaLink;
                 highestQuality = mediaLink.quality;
             }
         }
         return result;
     }
 
-    private String selectLinkWithLowestQuality(List<DownloadLink> mediaLinks){
+    private DownloadLink selectLinkWithLowestQuality(List<DownloadLink> mediaLinks){
         int lowestQuality = Integer.MAX_VALUE;
-        String result = "";
+        DownloadLink result = null;
         for (DownloadLink mediaLink:mediaLinks){
             if(lowestQuality > mediaLink.quality){
-                result = mediaLink.url;
+                result = mediaLink;
                 lowestQuality = mediaLink.quality;
             }
         }
@@ -229,7 +231,7 @@ public class DownloadManager {
         if (entity2 != null && response2.getStatusLine().getStatusCode() == 200) {
             long length = entity2.getContentLength();
             InputStream instream2 = entity2.getContent();
-            log.debug("Writing " + length + " bytes to " + outputfile);
+            System.out.println("Writing " + length + " bytes to " + outputfile);
             if (outputfile.exists()) {
                 outputfile.delete();
             }
@@ -247,6 +249,7 @@ public class DownloadManager {
             } finally {
                 outstream.close();
             }
+            System.out.print("\n\n");
         }
     }
 
