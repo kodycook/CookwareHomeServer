@@ -4,13 +4,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 
 /**
  * Created by Kody on 19/09/2017.
  */
 public class FileTransferrerRunnable implements Runnable {
-    // TODO: Add files which couldn't be found in the database to a temp failed folder
     private static final Logger log = Logger.getLogger(FileTransferrerRunnable.class);
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
@@ -46,14 +46,14 @@ public class FileTransferrerRunnable implements Runnable {
                                 }
                                 transferMedia(currentMediaInfo);
                                 databaseManager.updateState(currentMediaInfo.ID, DownloadState.FINISHED);
-                                // TODO: Update the path in the Database
                             }
                             else if (currentMediaInfo.STATE.equals(DownloadState.IGNORED)){
-                                // TODO: Delete ignored file if it has been downloaded
+                                currentFile.delete();
                             }
                         }
                         else {
-                            log.error(String.format("Could not match \"%s\" media file to entry in database",currentFileName));
+                            log.error(String.format("Could not match \"%s\" media file to entry in database - moved to \"unidentified\" folder",currentFileName));
+                            transferUnidentifiedFile(currentFileName);
                         }
                     }
                 }
@@ -109,7 +109,11 @@ public class FileTransferrerRunnable implements Runnable {
                 return;
             }
 
-            // TODO: Sort issues with copying files instead of moving and if a files already exisits
+            if(destinationFile.exists()){
+                log.warn(String.format("File: %s already exists in the destination", mediaInfo.NAME));
+                return;
+            }
+
             FileUtils.moveFile(sourceFile, destinationFile);
 
             log.info(String.format("Moved %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));
@@ -119,6 +123,22 @@ public class FileTransferrerRunnable implements Runnable {
 
         }catch(Exception e){
             log.error(e);
+        }
+    }
+
+    private void transferUnidentifiedFile(String fileName){
+        // WILL IS THE APPROACH I'VE TAKEN IN THIS METHOD POOR IMPLEMENTATION?
+        String path = MediaManager.tempPath;
+        directoryTools.createNewDirectory(path);
+        File sourceFile = new File(path + "\\" + fileName);
+
+        path += "\\Unidentified";
+        File destinationFile = new File(path + "\\" + fileName);
+
+        try {
+            FileUtils.moveFile(sourceFile, destinationFile);
+        } catch (IOException e) {
+            log.error("Unidentified file failed to move", e);
         }
     }
 

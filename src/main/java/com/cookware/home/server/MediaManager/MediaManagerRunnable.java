@@ -69,7 +69,7 @@ public class MediaManagerRunnable implements Runnable{
                         currentMedia = tempMedia;
                         updateState(currentMedia, DownloadState.TRANSFERRING);
                         mediaQueue.remove(index);
-                        // TODO: send a message to plex server to refresh
+                        // TODO: Send a message to plex server to refresh
                     }
                     else {
                         log.error(String.format("Media failed to download: %s", currentMedia.toString()));
@@ -287,10 +287,6 @@ public class MediaManagerRunnable implements Runnable{
             info.NAME = name.substring(0,name.length()-9);
             info.RELEASED = getReleasedDatafromScrapedHtml(document);
         }
-
-        // TODO: Move this code to the Media Downloader
-//        completeExtractedMediaHostUrl = webTools.extractBaseURl(url) + getRedirectedMediaLink(scrapeHtml);
-//        log.info(String.format("Extracted media URL:%s",completeExtractedMediaHostUrl));
 
         return info;
     }
