@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -61,7 +62,7 @@ public class WebTools {
             connection.addRequestProperty("User-Agent", "Mozilla");
             connection.addRequestProperty("Referer", url);
 
-            if (type.equals(HttpRequestType.POST)){
+            if (type.equals(HttpRequestType.POST)) {
                 connection.setRequestMethod("POST");
                 connection.setDoInput(true);
                 connection.setDoOutput(true);
@@ -82,9 +83,12 @@ public class WebTools {
                 html.append(inputLine);
             }
             response.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        catch(SocketTimeoutException e){
+            log.error("Connection timed out, check VPN", e);
+        }
+        catch (IOException e) {
+            log.error(e);
             return "";
         }
         return html.toString();

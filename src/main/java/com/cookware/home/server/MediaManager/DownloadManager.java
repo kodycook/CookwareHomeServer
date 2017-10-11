@@ -43,24 +43,25 @@ public class DownloadManager {
 
     public MediaInfo downloadMedia(MediaInfo mediaInfo){
         boolean downloadSuccess;
-        final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
+        final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo);
         if(embeddedMediaUrlAndQuality == null){
+            log.error(String.format("This media item will need to be downloaded manually and has been set to the \"IGNORED\" state in the Database"));
+            mediaInfo.STATE = DownloadState.IGNORED;
+            databaseManager.updateState(mediaInfo.ID, mediaInfo.STATE);
             return null;
         }
         mediaInfo.QUALITY = embeddedMediaUrlAndQuality.quality;
         mediaInfo.PATH = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
-        if (mediaInfo.PATH.equals("")){
-            return null;
-        }
+
         mediaInfo.PATH += fileType;
-        // TODO: Change newDownload to take in MediaInfo as a parameter to properly construct filenames
 
         databaseManager.updatePath(mediaInfo.ID, (mediaInfo.PATH));
         databaseManager.updateQuality(mediaInfo.ID, mediaInfo.QUALITY);
-        // TODO: Change state of media to "DOWNLOADING"
         downloadSuccess = newDownload(embeddedMediaUrlAndQuality.url, mediaInfo.PATH, mediaInfo.TYPE);
         if(!downloadSuccess){
             log.error(String.format("Issue downloading: %s",mediaInfo.toString()));
+            mediaInfo.STATE = DownloadState.FAILED;
+            databaseManager.updateState(mediaInfo.ID, mediaInfo.STATE);
             return null;
         }
 
@@ -68,16 +69,29 @@ public class DownloadManager {
         return mediaInfo;
     }
 
-    private DownloadLink bridgeToVideoMe(String url, int quality){
-        String html = webTools.getWebPageHtml(url);
-        String videoMeUrl = webTools.extractBaseURl(url) + findVideoMeLinkInHtml(html);
+    private DownloadLink bridgeToVideoMe(MediaInfo mediaInfo){
+        final String html = webTools.getWebPageHtml(mediaInfo.URL);
+        final String urlExtension = findVideoMeLinkInHtml(html);
+        if(urlExtension.equals("")){
+            log.error(String.format("No video.me link found at %s", mediaInfo.URL));
+            return null;
+        }
+        final String videoMeUrl = webTools.extractBaseURl(mediaInfo.URL) + urlExtension;
         String redirectedUrl = webTools.getRedirectedUrl(videoMeUrl);
         if(redirectedUrl.equals("")) {
+            log.error(String.format("Could not obtain redirect URL for %s", videoMeUrl));
             return null;
         }
         List<DownloadLink> mediaDownloadLinks = extractAllMediaUrls(redirectedUrl);
+        if(mediaDownloadLinks == null){
+            return null;
+        }
+        else if(mediaDownloadLinks.size() == 0){
+            log.error(String.format("Could not find media URLS at %s", redirectedUrl));
+            return null;
+        }
 
-        return selectBestLinkByQuality(mediaDownloadLinks, quality);
+        return selectBestLinkByQuality(mediaDownloadLinks, mediaInfo.QUALITY);
     }
 
 
@@ -118,6 +132,11 @@ public class DownloadManager {
         String logicalLine;
         String firstPage = webTools.getWebPageHtml(url);
         Document document = Jsoup.parse(firstPage);
+        System.out.println(firstPage);
+        if(document.getElementsByAttributeValue("name", "hash").size() == 0){
+            log.error(String.format("Error retrieving hash code from %s",url));
+            return null;
+        }
         String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
 
         List<NameValuePair> params = new ArrayList<NameValuePair>();

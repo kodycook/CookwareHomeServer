@@ -38,9 +38,13 @@ public class MediaManagerRunnable implements Runnable{
         int index = 0;
         MediaInfo currentMedia;
         MediaInfo tempMedia;
+        // TODO: Move the next two lines of code into the main loop
         resetFailedDownloadMediaItems();
         retrieveQueuedMediaFromDatabase(mediaQueue);
 
+        // TODO: Appropriately refresh updated items in media queue properly
+        // TODO: Update TV Show object when all episodes are downloaded
+        // TODO: FIX THE TIMEOUT ISSUE
 
         fileTransferrer.start();
 
@@ -73,7 +77,6 @@ public class MediaManagerRunnable implements Runnable{
                     }
                     else {
                         log.error(String.format("Media failed to download: %s", currentMedia.toString()));
-                        updateState(currentMedia, DownloadState.FAILED);
                         index++;
                     }
                 }
