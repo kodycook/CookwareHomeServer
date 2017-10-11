@@ -69,6 +69,7 @@ public class MediaManagerRunnable implements Runnable{
                         currentMedia = tempMedia;
                         updateState(currentMedia, DownloadState.TRANSFERRING);
                         mediaQueue.remove(index);
+                        // TODO: send a message to plex server to refresh
                     }
                     else {
                         log.error(String.format("Media failed to download: %s", currentMedia.toString()));

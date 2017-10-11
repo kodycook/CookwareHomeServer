@@ -10,6 +10,7 @@ import java.math.BigInteger;
  * Created by Kody on 19/09/2017.
  */
 public class FileTransferrerRunnable implements Runnable {
+    // TODO: Add files which couldn't be found in the database to a temp failed folder
     private static final Logger log = Logger.getLogger(FileTransferrerRunnable.class);
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
@@ -108,6 +109,7 @@ public class FileTransferrerRunnable implements Runnable {
                 return;
             }
 
+            // TODO: Sort issues with copying files instead of moving and if a files already exisits
             FileUtils.moveFile(sourceFile, destinationFile);
 
             log.info(String.format("Moved %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));

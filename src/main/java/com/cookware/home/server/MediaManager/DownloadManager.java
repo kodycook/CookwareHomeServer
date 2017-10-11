@@ -44,6 +44,9 @@ public class DownloadManager {
     public MediaInfo downloadMedia(MediaInfo mediaInfo){
         boolean downloadSuccess;
         final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo.URL, mediaInfo.QUALITY);
+        if(embeddedMediaUrlAndQuality == null){
+            return null;
+        }
         mediaInfo.QUALITY = embeddedMediaUrlAndQuality.quality;
         mediaInfo.PATH = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
         if (mediaInfo.PATH.equals("")){
@@ -69,6 +72,9 @@ public class DownloadManager {
         String html = webTools.getWebPageHtml(url);
         String videoMeUrl = webTools.extractBaseURl(url) + findVideoMeLinkInHtml(html);
         String redirectedUrl = webTools.getRedirectedUrl(videoMeUrl);
+        if(redirectedUrl.equals("")) {
+            return null;
+        }
         List<DownloadLink> mediaDownloadLinks = extractAllMediaUrls(redirectedUrl);
 
         return selectBestLinkByQuality(mediaDownloadLinks, quality);
@@ -173,9 +179,7 @@ public class DownloadManager {
             return selectLinkWithLowestQuality(mediaLinks);
         }
         else{
-            // TODO: Update this method to accept all qualities
-            log.error("METHOD NOT COMPLETE YET");
-            return null;
+            return slectLinkClosestToSpecifiedQuality(mediaLinks, quality);
         }
     }
 
@@ -200,6 +204,21 @@ public class DownloadManager {
             if(lowestQuality > mediaLink.quality){
                 result = mediaLink;
                 lowestQuality = mediaLink.quality;
+            }
+        }
+        return result;
+    }
+
+
+    private DownloadLink slectLinkClosestToSpecifiedQuality(List<DownloadLink> mediaLinks, int specifiedQuality){
+        int finalQualityDifference = Integer.MAX_VALUE;
+        int currentQualityDifference;
+        DownloadLink result = null;
+        for (DownloadLink mediaLink:mediaLinks){
+            currentQualityDifference = Math.abs(mediaLink.quality-specifiedQuality);
+            if(currentQualityDifference < finalQualityDifference){
+                result = mediaLink;
+                finalQualityDifference = currentQualityDifference;
             }
         }
         return result;

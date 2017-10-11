@@ -393,6 +393,7 @@ public class DatabaseManager {
 
             stmt = conn.createStatement();
             rs = stmt.executeQuery(query);
+            conn.commit();
 
             while (rs.next()) {
                 MediaInfo mediaInfo = new MediaInfo();
