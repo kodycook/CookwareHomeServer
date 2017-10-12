@@ -19,14 +19,13 @@ import java.util.List;
  * Created by Kody on 5/09/2017.
  */
 public class MediaManagerRunnable implements Runnable{
+    private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
     // TODO: Add in a Statistics Manager
-    private final List<MediaInfo> mediaQueue = Collections.synchronizedList(new ArrayList<MediaInfo>());
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager = new DatabaseManager("media.db");
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final boolean isDownloading = true;
-    private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
+    private final Scheduler scheduler = new Scheduler();
 
     public MediaManagerRunnable(){
         databaseManager.initialise();
@@ -35,61 +34,56 @@ public class MediaManagerRunnable implements Runnable{
     @Override
     public void run()
     {
-        int index = 0;
+        final List<MediaInfo> mediaQueue = new ArrayList<MediaInfo>();
+        boolean firstLoop;
+        boolean hasDownload = false;
         MediaInfo currentMedia;
-        MediaInfo tempMedia;
-        // TODO: Move the next two lines of code into the main loop
-        resetFailedDownloadMediaItems();
-        retrieveQueuedMediaFromDatabase(mediaQueue);
 
-        // TODO: Appropriately refresh updated items in media queue properly
         // TODO: Update TV Show object when all episodes are downloaded
         // TODO: FIX THE TIMEOUT ISSUE
 
         fileTransferrer.start();
 
-
-        while(true)
-        {
-            // TODO: Write the Scheduler
-            if (!isDownloading) {
-                break;
-            }
-
-
-            while(mediaQueue.size()>index){
-
-
-                sortMediaQueue();
-
-                currentMedia = mediaQueue.get(index);
-                if (currentMedia.TYPE.equals(MediaType.TV)){
-                    index ++;
+        while(true){
+            firstLoop = true;
+            while (scheduler.isDownloading()){
+                mediaQueue.clear();
+                if(firstLoop){
+                    resetFailedDownloadMediaItems();
+                    retrieveQueuedMediaFromDatabase(mediaQueue);
+                    log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
+                    firstLoop = false;
                 }
                 else {
-                    updateState(currentMedia, DownloadState.DOWNLOADING);
-                    tempMedia = downloadManager.downloadMedia(currentMedia); // TODO: remove returning of mediaInfo
-                    if(tempMedia != null){
-                        currentMedia = tempMedia;
-                        updateState(currentMedia, DownloadState.TRANSFERRING);
-                        mediaQueue.remove(index);
-                        // TODO: Send a message to plex server to refresh
-                    }
-                    else {
-                        log.error(String.format("Media failed to download: %s", currentMedia.toString()));
-                        index++;
-                    }
+                    retrieveQueuedMediaFromDatabase(mediaQueue);
                 }
+
+                currentMedia = getNextItemForDownload(mediaQueue);
+                if (currentMedia == null){
+                    break;
+                }
+                else {
+                    hasDownload = true;
+                }
+
+                updateState(currentMedia, DownloadState.DOWNLOADING);
+                downloadManager.downloadMedia(currentMedia);
             }
-            log.info("No more media to download");
+
+
+            if (hasDownload){
+                log.info("No more media to download");
+                hasDownload = false;
+            }
             try {
-                Thread.sleep(10000);
+                Thread.sleep(60000);
             } catch (InterruptedException e) {
                 log.error("MediaManager thread interrupted", e);
                 System.exit(-1);
             }
         }
     }
+
 
     public void updateState(MediaInfo mediaInfo, DownloadState downloadState){
         mediaInfo.STATE = downloadState;
@@ -114,28 +108,22 @@ public class MediaManagerRunnable implements Runnable{
         }
     }
 
-    private void sortMediaQueue(){ // ASK WILL HOW HE UNIT TEST'S PRIVATE CLASSES
-        // TODO: Add Iterator to remove elements out of tempmedia queue as it sorts
-        List<MediaInfo>  tempMediaQueue = new ArrayList<MediaInfo>();
-        for (MediaInfo currentItem : mediaQueue){
-            tempMediaQueue.add(currentItem);
-        }
+    private MediaInfo getNextItemForDownload(List<MediaInfo> mediaQueue ){
 
-        mediaQueue.clear();
         for (int currentPriority = 0; currentPriority <= 5; currentPriority++){
-            for (MediaInfo currentItem : tempMediaQueue){
-                if (currentItem.PRIORITY == currentPriority){
-                    mediaQueue.add(currentItem);
+            for (MediaInfo currentItem : mediaQueue){
+                if ((currentItem.PRIORITY == currentPriority) && (!currentItem.TYPE.equals(MediaType.TV))) {
+                    return currentItem;
                 }
             }
         }
+        return null;
     }
 
 
     public void retrieveQueuedMediaFromDatabase(List<MediaInfo> mediaQueue) {
         List<MediaInfo> tempMediaQueue = databaseManager.getDownloadQueue();
         if(tempMediaQueue.size()!=0) {
-            log.info(String.format("Retrieved %d pending downloads from Database", tempMediaQueue.size()));
             for (MediaInfo queuedMedia : tempMediaQueue) {
                 mediaQueue.add(queuedMedia);
                 log.debug(queuedMedia.toString());
@@ -145,8 +133,6 @@ public class MediaManagerRunnable implements Runnable{
 
 
     public void addNewMediaRequest(String url, int priority, String qualityString){
-        // TODO; Stop the returning of MediaInfo (they are pointers and don't require it)
-        final WebTools webTools = new WebTools();
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
 
@@ -156,11 +142,12 @@ public class MediaManagerRunnable implements Runnable{
 
         if (episodes.isEmpty()) {
             info.TYPE = MediaType.MOVIE;
-            info = addMediaToDataBase(info);
+            addMediaToDataBase(info);
         }
         else {
             info.TYPE = MediaType.TV;
-            info = addMediaToDataBase(info);
+            // ASK WILL IF IT'S OK TO MODIFY AN OBJECT WHOSE POINTER IS PASSED AS A PARAMETER OR SHOULD THE OBJECT POINTER BE RETURNED INDICATING THAT THE OBJECT HAS BEEN MODIFIED
+            addMediaToDataBase(info);
 
             for(MediaInfo episodeInfo: episodes){
                 episodeInfo.TYPE = MediaType.EPISODE;
@@ -168,7 +155,7 @@ public class MediaManagerRunnable implements Runnable{
                 episodeInfo.PARENTSHOWNAME = info.NAME;
                 episodeInfo.PRIORITY = info.PRIORITY;
                 episodeInfo.QUALITY = info.QUALITY;
-                episodeInfo = addMediaToDataBase(episodeInfo);
+                addMediaToDataBase(episodeInfo);
             }
         }
         log.info(String.format("Finished adding %s to Data Base", info.NAME));
@@ -246,40 +233,37 @@ public class MediaManagerRunnable implements Runnable{
     }
 
 
-    public MediaInfo addMediaToDataBase(MediaInfo info){
+    public boolean addMediaToDataBase(MediaInfo info){
         Boolean success;
         if (!info.TYPE.equals(MediaType.EPISODE)) {
-            info = scrapeMediaInfoFromUrl(info);
+            scrapeMediaInfoFromUrl(info);
         }
 
         info.ID = fileNameTools.generateHashFromMediaInfo(info);
 
-        if(mediaInfoValid(info)){
+        if(info.isComplete()){
             success = databaseManager.addMediaToDatabase(info);
         }
         else {
             log.error("Media not added - mandatory attribute not set");
-            return null;
+            return false;
         }
 
-        if(success){
-            mediaQueue.add(info);
-            log.debug(info.toString());
-        }
-        else {
+        if(!success) {
             if(info.TYPE.equals(MediaType.EPISODE)){
                 log.info(String.format("Episode already in database: %s", info.toString()));
+                return false;
             }
             else if(info.TYPE.equals(MediaType.MOVIE)){
                 log.info(String.format("Movie already in database: %s", info.toString()));
-                return null;
+                return false;
             }
         }
-        return info;
+        return true;
     }
 
 
-    public MediaInfo scrapeMediaInfoFromUrl(MediaInfo info){
+    public void scrapeMediaInfoFromUrl(MediaInfo info){
         String name;
         final WebTools webTools = new WebTools();
         final String scrapedHtml = webTools.getWebPageHtml(info.URL);
@@ -291,12 +275,7 @@ public class MediaManagerRunnable implements Runnable{
             info.RELEASED = getReleasedDatafromScrapedHtml(document);
         }
 
-        return info;
-    }
-
-
-    public boolean mediaInfoValid(MediaInfo info){
-        return true;
+        return;
     }
 
 
