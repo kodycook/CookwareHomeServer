@@ -68,7 +68,7 @@ public class MediaManagerRunnable implements Runnable{
                 }
                 else {
                     updateState(currentMedia, DownloadState.DOWNLOADING);
-                    tempMedia = downloadManager.downloadMedia(currentMedia);
+                    tempMedia = downloadManager.downloadMedia(currentMedia); // TODO: remove returning of mediaInfo
                     if(tempMedia != null){
                         currentMedia = tempMedia;
                         updateState(currentMedia, DownloadState.TRANSFERRING);
@@ -104,7 +104,6 @@ public class MediaManagerRunnable implements Runnable{
 
         for(MediaInfo mediaInfo: halfDownloadedMedia){
             updateState(mediaInfo, DownloadState.PENDING);
-            databaseManager.updatePriority(mediaInfo.ID, 5);
             log.info(String.format("Half finished download reset: %s", mediaInfo.toString()));
         }
 
@@ -146,6 +145,7 @@ public class MediaManagerRunnable implements Runnable{
 
 
     public void addNewMediaRequest(String url, int priority, String qualityString){
+        // TODO; Stop the returning of MediaInfo (they are pointers and don't require it)
         final WebTools webTools = new WebTools();
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();

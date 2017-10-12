@@ -25,6 +25,7 @@ public class DatabaseManager {
     }
 
     public void initialise() {
+        // TODO: Resort Database entries to make it easier to read
         databaseAttributes.add(new DatabaseEntryAttribute("ID", "BIGINT NOT NULL", BigInteger.class));
         databaseAttributes.add(new DatabaseEntryAttribute("NAME", "TEXT NOT NULL", String.class));
         databaseAttributes.add(new DatabaseEntryAttribute("TYPE", "TINYINT NOT NULL", Integer.class));
@@ -73,10 +74,17 @@ public class DatabaseManager {
         updateDatabaseValue(mediaId, "QUALITY", quality);
     }
 
+
     public void updatePriority(BigInteger mediaId, int priority){
 
         // TODO: Uncomment this for final deployment
 //        updateDatabaseValue(mediaId, "QUALITY", priority);
+    }
+
+
+    public void updateDownloadDate(BigInteger id, LocalDate date){
+
+        updateDatabaseValue(id, "DOWNLOADED", date);
     }
 
 
@@ -287,7 +295,7 @@ public class DatabaseManager {
         String databaseAttributeValueAsString = null;
         try {
             if (associatedDatabaseEntryAttribute.DATATYPE.equals(String.class)) {
-                return String.format("'%s'", (String) value);
+                return String.format("'%s'", ((String) value).replace("'", "''"));
             }
             if (associatedDatabaseEntryAttribute.DATATYPE.equals(BigInteger.class)) {
                 return String.format("%d", (BigInteger) value);
