@@ -175,6 +175,7 @@ public class DatabaseManager {
 
         if (!querySucceeded) {
             log.error(String.format("Failed to update Database ID: %d Attribute: %s Value: %s",id, key, databaseAttributeValueString));
+            System.exit(1);
         }
     }
 

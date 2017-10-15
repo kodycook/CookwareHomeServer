@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class Scheduler {
     private static final Logger log = Logger.getLogger(Scheduler.class);
-    private final autoDownload downloading = autoDownload.MANUAL_ON;
+    private final autoDownload downloading = autoDownload.MANUAL_OFF;
     private final int daysInAWeek = 7;
     private DaySchedule[] weekSchedule = new DaySchedule[daysInAWeek];
 
