@@ -237,7 +237,7 @@ public class MediaInfo {
         return true;
     }
 
-    public boolean isCompleteMovieOrTv(){
+    private boolean isCompleteMovieOrTv(){
         if(this.ID.equals(new BigInteger("0"))){
             return false;
         }

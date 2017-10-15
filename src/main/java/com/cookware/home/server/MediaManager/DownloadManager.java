@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +67,7 @@ public class DownloadManager {
         }
 
 
+        databaseManager.updateDownloadDate(mediaInfo.ID, LocalDate.now());
         return mediaInfo;
     }
 
@@ -132,7 +134,6 @@ public class DownloadManager {
         String logicalLine;
         String firstPage = webTools.getWebPageHtml(url);
         Document document = Jsoup.parse(firstPage);
-        System.out.println(firstPage);
         if(document.getElementsByAttributeValue("name", "hash").size() == 0){
             log.error(String.format("Error retrieving hash code from %s",url));
             return null;
