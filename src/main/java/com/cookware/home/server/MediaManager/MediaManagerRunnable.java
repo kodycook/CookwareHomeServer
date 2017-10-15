@@ -21,6 +21,7 @@ import java.util.List;
 public class MediaManagerRunnable implements Runnable{
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
     // TODO: Add in a Statistics Manager
+    private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager = new DatabaseManager("media.db");
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
@@ -52,6 +53,12 @@ public class MediaManagerRunnable implements Runnable{
                     resetFailedDownloadMediaItems();
                     retrieveQueuedMediaFromDatabase(mediaQueue);
                     log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
+                    if (!directoryTools.checkIfNetworkLocationAvailable(MediaManager.finalPath)){
+                        log.warn("Media Storage not available");
+                    }
+                    else {
+                        log.info("Media Storage detected");
+                    }
                     firstLoop = false;
                 }
                 else {
@@ -241,13 +248,13 @@ public class MediaManagerRunnable implements Runnable{
 
         info.ID = fileNameTools.generateHashFromMediaInfo(info);
 
-        if(info.isComplete()){
+//        if(info.isComplete()){
             success = databaseManager.addMediaToDatabase(info);
-        }
-        else {
-            log.error("Media not added - mandatory attribute not set");
-            return false;
-        }
+//        }
+//        else {
+//            log.error("Media not added - mandatory attribute not set");
+//            return false;
+//        }
 
         if(!success) {
             if(info.TYPE.equals(MediaType.EPISODE)){

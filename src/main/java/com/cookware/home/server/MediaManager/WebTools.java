@@ -86,6 +86,7 @@ public class WebTools {
         }
         catch(SocketTimeoutException e){
             log.error("Connection timed out, check VPN", e);
+            return "";
         }
         catch (IOException e) {
             log.error(e);

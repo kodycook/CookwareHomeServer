@@ -26,8 +26,8 @@ public class FileNameTools {
     public BigInteger generateHashFromFullFileName(String fileName){
         int fileTypeIndex = fileName.lastIndexOf('.');
 
-        if (fileTypeIndex != -1){
-            fileName = fileName.substring(0,fileTypeIndex);
+        if (fileName.contains(".mp4")){
+            fileName = fileName.substring(0,fileTypeIndex); // START HERE
         }
         return generateHashFromGeneralMediaName(fileName);
     }

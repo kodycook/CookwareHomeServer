@@ -111,7 +111,7 @@ public class FileTransferrerRunnable implements Runnable {
 
             if(destinationFile.exists()){
                 log.warn(String.format("File: %s already exists in the destination", mediaInfo.NAME));
-                return;
+                destinationFile.delete();
             }
 
             FileUtils.moveFile(sourceFile, destinationFile);

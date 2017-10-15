@@ -67,7 +67,10 @@ public class DownloadManager {
         }
 
 
+        mediaInfo.STATE = DownloadState.TRANSFERRING;
+        databaseManager.updateState(mediaInfo.ID, mediaInfo.STATE);
         databaseManager.updateDownloadDate(mediaInfo.ID, LocalDate.now());
+        log.info(String.format("Finished downloading: %s",mediaInfo.toString()));
         return mediaInfo;
     }
 
@@ -112,16 +115,18 @@ public class DownloadManager {
         for (Element matchedLink : matchedLinks) {
             if(matchedLink.hasAttr("class")) {
                 site = "";
-                try{
-                    site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
-                }catch(Exception e){
-                    log.error(e);
+                if(matchedLink.getElementsByClass("version_host").tagName("script").html().split("'").length > 1) {
+                    try {
+                        site = matchedLink.getElementsByClass("version_host").tagName("script").html().split("'")[1];
+                    } catch (Exception e) {
+                        log.error(e);
+                    }
+                    if(site.equals("thevideo.me")){
+                        url = matchedLink.getElementsByAttribute("href").attr("href");
+                        break;
+                    }
+                    i++;
                 }
-                if(site.equals("thevideo.me")){
-                    url = matchedLink.getElementsByAttribute("href").attr("href");
-                    break;
-                }
-                i++;
             }
         }
         return url;
