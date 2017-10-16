@@ -11,12 +11,20 @@ import java.time.LocalDate;
  */
 public class FileNameToolsTest extends TestCase {
     public void testGenerateHashFromMediaInfo() throws Exception {
-        MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.NAME = "Abcde 12345";
-        mediaInfo.RELEASED = LocalDate.of(2000,1,1);
-        mediaInfo.TYPE = MediaType.MOVIE;
+        MediaInfo mediaInfo1 = new MediaInfo();
+        mediaInfo1.NAME = "Abcde 12345";
+        mediaInfo1.RELEASED = LocalDate.of(2000,1,1);
+        mediaInfo1.TYPE = MediaType.MOVIE;
 
-        assert(new FileNameTools().generateHashFromMediaInfo(mediaInfo).equals(new BigInteger("1024606638")));
+        MediaInfo mediaInfo2 = new MediaInfo();
+        mediaInfo2.NAME = "T.M.I.";
+        mediaInfo2.PARENTSHOWNAME = "South Park";
+        mediaInfo2.EPISODE = (float) 15.04;
+        mediaInfo2.TYPE = MediaType.EPISODE;
+
+
+        assert(new FileNameTools().generateHashFromMediaInfo(mediaInfo1).equals(new BigInteger("1024606638")));
+//        System.out.println(new FileNameTools().generateHashFromMediaInfo(mediaInfo2));
     }
 
     public void testGenerateHashFromShortMediaName() throws Exception {
@@ -31,9 +39,12 @@ public class FileNameToolsTest extends TestCase {
     }
 
     public void testGenerateHashFromFullFileNameMovie() throws Exception {
-        final String fileName = "Abcde 12345 (2000).mp4";
+//        final String fileName = "Abcde 12345 (2000).mp4";
+        final String fileName = "South Park - S14E13 - Coon vs. Coon & Friends.mp4";
 
-        assert(new FileNameTools().generateHashFromFullFileName(fileName).equals(new BigInteger("1024606638")));
+        System.out.println(new FileNameTools().generateHashFromFullFileName(fileName));
+
+//        assert(new FileNameTools().generateHashFromFullFileName(fileName).equals(new BigInteger("1024606638")));
     }
 
     public void testGenerateHashFromFullFileNameEpisode() throws Exception {

@@ -73,6 +73,7 @@ public class FileTransferrerRunnable implements Runnable {
     }
 
     private void transferMedia(MediaInfo mediaInfo){
+        log.info(String.format("Starting Moving: %s", mediaInfo.toString()));
         File sourceFile = null;
         File destinationFile = null;
         String localDirectory;
@@ -116,13 +117,13 @@ public class FileTransferrerRunnable implements Runnable {
 
             FileUtils.moveFile(sourceFile, destinationFile);
 
-            log.info(String.format("Moved %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));
+            log.info(String.format("Finished Moving %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));
 
             databaseManager.updateState(mediaInfo.ID, DownloadState.FINISHED);
             databaseManager.updatePath(mediaInfo.ID, mediaInfo.PATH);
 
         }catch(Exception e){
-            log.error(e);
+            log.error(String.format("Issue trying to move file: %s", mediaInfo.NAME),e);
         }
     }
 
@@ -134,6 +135,11 @@ public class FileTransferrerRunnable implements Runnable {
 
         path += "\\Unidentified";
         File destinationFile = new File(path + "\\" + fileName);
+
+        if(destinationFile.exists()){
+            log.warn(String.format("Unidentified File: %s already exists in the destination", fileName));
+            destinationFile.delete();
+        }
 
         try {
             FileUtils.moveFile(sourceFile, destinationFile);

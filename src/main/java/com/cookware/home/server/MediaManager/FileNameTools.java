@@ -51,8 +51,7 @@ public class FileNameTools {
                     mediaInfo.PARENTSHOWNAME,
                     mediaInfo.getSeason(),
                     mediaInfo.getEpisode(),
-                    mediaInfo.NAME,
-                    mediaInfo.RELEASED.getYear());
+                    mediaInfo.NAME);
         }else {
             mediaFileName = String.format("%s (%d)",
                     mediaInfo.NAME,

@@ -43,6 +43,7 @@ public class DownloadManager {
     }
 
     public MediaInfo downloadMedia(MediaInfo mediaInfo){
+        log.info(String.format("Starting download: %s", mediaInfo.toString()));
         boolean downloadSuccess;
         final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo);
         if(embeddedMediaUrlAndQuality == null){
