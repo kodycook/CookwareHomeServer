@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -293,10 +294,16 @@ public class DownloadManager {
             try {
                 byte[] buffer = new byte[2048];
                 int count = -1;
-                while ((count = instream2.read(buffer)) != -1) {
-                    printProgress(startTime, (int) length/2048+1, i);
-                    i++;
-                    outstream.write(buffer, 0, count);
+                try {
+                    while ((count = instream2.read(buffer)) != -1) {
+                        printProgress(startTime, (int) length / 2048 + 1, i);
+                        i++;
+                        outstream.write(buffer, 0, count);
+                    }
+                }
+                catch (SocketException e){
+                    log.error(String.format("Issue downloading: %s", downloadUrl));
+                    return false;
                 }
                 outstream.flush();
             } finally {
