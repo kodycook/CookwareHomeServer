@@ -23,10 +23,10 @@ public class MediaManagerRunnable implements Runnable{
     // TODO: Add in a Statistics Manager
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
-    private final DatabaseManager databaseManager = new DatabaseManager("media.db");
+    private final DatabaseManager databaseManager = new DatabaseManager(MediaManager.databaseName);
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final Scheduler scheduler = new Scheduler();
+    private final Scheduler scheduler = new Scheduler(MediaManager.scheduleFileName);
 
     public MediaManagerRunnable(){
         databaseManager.initialise();

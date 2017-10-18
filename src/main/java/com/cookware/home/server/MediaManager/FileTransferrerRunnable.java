@@ -115,7 +115,12 @@ public class FileTransferrerRunnable implements Runnable {
                 destinationFile.delete();
             }
 
-            FileUtils.moveFile(sourceFile, destinationFile);
+            try {
+                FileUtils.moveFile(sourceFile, destinationFile);
+            }
+            catch (IOException e){
+                log.error("Issue moving file to Media Storage");
+            }
 
             log.info(String.format("Finished Moving %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));
 

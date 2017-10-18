@@ -11,10 +11,32 @@ import java.util.ArrayList;
  */
 public class Scheduler {
     private static final Logger log = Logger.getLogger(Scheduler.class);
-    private final autoDownload downloading = autoDownload.MANUAL_ON;
+    private final CsvManager csvManager = new CsvManager();
+    private final autoDownload downloading = autoDownload.AUTOMATIC;
     private final int daysInAWeek = 7;
-    private DaySchedule[] weekSchedule = new DaySchedule[daysInAWeek];
+    private final int hoursInADay = 24;
+    private final String schedulerFileName;
+    private boolean[][] weekSchedule = new boolean[this.hoursInADay][this.daysInAWeek];
+    private boolean autoDownloadState = false;
 
+    public Scheduler(String fileName){
+        this.schedulerFileName = fileName;
+        if(csvManager.createFile(this.schedulerFileName)){
+            initialiseSchedule();
+            saveSchedule();
+        }
+        else {
+            loadSchedule();
+        }
+    }
+
+    private void initialiseSchedule(){
+        for(int hour = 0; hour < this.hoursInADay; hour++){
+            for(int day = 0; day < this.daysInAWeek; day++){
+                this.weekSchedule[hour][day] = true;
+            }
+        }
+    }
 
     public boolean isDownloading() {
         if(downloading.equals(autoDownload.MANUAL_ON)) {
@@ -28,15 +50,26 @@ public class Scheduler {
         }
     }
 
-    public boolean isCurrentlyScheduledForDownload() {
+    private boolean isCurrentlyScheduledForDownload() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
-        System.out.println(dtf.format(now)); //2016/11/16 12:08:43
+        boolean currentlyDownloading;
+
 
         int hour = now.getHour();
         int day = now.getDayOfWeek().getValue() - 1;
 
-        return weekSchedule[day].daySchedule[hour];
+        currentlyDownloading = weekSchedule[hour][day];
+
+        if(currentlyDownloading & !this.autoDownloadState){
+            log.info("Scheduler started downloader");
+        }
+        if(!currentlyDownloading & this.autoDownloadState){
+            log.info("Scheduler stopped downloader");
+        }
+        this.autoDownloadState = currentlyDownloading;
+
+        return weekSchedule[hour][day];
     }
 
 
@@ -52,26 +85,45 @@ public class Scheduler {
         }
     }
 
-    private void saveSchedule(){
-        // TODO: Finish Implementing this (saveSchedule) method
 
+    private void saveSchedule(){
+        csvManager.writeStringArrayToCsv(this.schedulerFileName, convertScheduleToStringArray());
     }
+
 
     private void loadSchedule(){
-        // TODO: Finish Implementing this (loadSchedule) method
-
+        String savedConfig[][] = csvManager.getStringArrayFromCsv(this.schedulerFileName);
+        convertStringArrayToSchedule(savedConfig);
     }
 
-    private class DaySchedule {
-        private final int hoursInADay = 24;
-        private boolean[] daySchedule = new boolean[hoursInADay];
 
-        public void setHour(int hour, boolean downloading){
-            this.daySchedule[hour] = downloading;
+    private String[][] convertScheduleToStringArray(){
+        String [][] result = new String[this.hoursInADay + 1][this.daysInAWeek + 1];
+        result[0] = new String[]{"",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+        };
+
+        for(int hour = 0; hour < this.hoursInADay; hour++){
+            result[hour+1][0] = String.format("%02d:00 - %02d:59", hour, hour);
+            for(int day = 0; day < this.daysInAWeek; day++){
+                result[hour+1][day+1] = this.weekSchedule[hour][day] ? "x" : "";
+            }
         }
+        return result;
+    }
 
-        public boolean getHour(int hour){
-            return this.daySchedule[hour];
+
+    private void convertStringArrayToSchedule(String[][] savedConfig){
+        for(int hour = 0; hour < this.hoursInADay; hour++){
+            for(int day = 0; day < this.daysInAWeek; day++){
+                this.weekSchedule[hour][day] = savedConfig[hour + 1][day + 1].equals("x");
+            }
         }
     }
 

@@ -77,8 +77,15 @@ public class DownloadManager {
 
     private DownloadLink bridgeToVideoMe(MediaInfo mediaInfo){
         final String html = webTools.getWebPageHtml(mediaInfo.URL);
+        if(html.equals("")){
+            System.exit(1);
+        }
         final String urlExtension = findVideoMeLinkInHtml(html);
-        if(urlExtension.equals("")){
+        if (urlExtension == null){
+            log.error(String.format("No links found at %s", mediaInfo.URL));
+            return null;
+        }
+        else if (urlExtension.equals("")){
             log.error(String.format("No video.me link found at %s", mediaInfo.URL));
             return null;
         }
@@ -256,8 +263,8 @@ public class DownloadManager {
         downloadFilepath = MediaManager.tempPath;
         File output = new File(downloadFilepath, downloadFilename);
         try {
-            downloadMediaToFile(downloadUrl, output);
-            return true;
+
+            return downloadMediaToFile(downloadUrl, output);
         } catch (Throwable throwable) {
             log.error(String.format("Error downloading media from %s to %s:\n",downloadUrl, downloadFilename), throwable);
             return false;
@@ -265,7 +272,7 @@ public class DownloadManager {
     }
 
 
-    private void downloadMediaToFile(String downloadUrl, File outputfile) throws Throwable {
+    private boolean downloadMediaToFile(String downloadUrl, File outputfile) throws Throwable {
         HttpGet httpget2 = new HttpGet(downloadUrl);
         long startTime = System.currentTimeMillis();
 
@@ -273,6 +280,7 @@ public class DownloadManager {
         HttpClient httpclient2 = new DefaultHttpClient();
         HttpResponse response2 = httpclient2.execute(httpget2);
         HttpEntity entity2 = response2.getEntity();
+        
         if (entity2 != null && response2.getStatusLine().getStatusCode() == 200) {
             long length = entity2.getContentLength();
             InputStream instream2 = entity2.getContent();
@@ -296,6 +304,7 @@ public class DownloadManager {
             }
             System.out.print("\n\n");
         }
+        return true;
     }
 
 

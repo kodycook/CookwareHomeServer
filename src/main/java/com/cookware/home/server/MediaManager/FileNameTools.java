@@ -29,6 +29,9 @@ public class FileNameTools {
         if (fileName.contains(".mp4")){
             fileName = fileName.substring(0,fileTypeIndex); // START HERE
         }
+        if (fileName.contains(".avi")){
+            fileName = fileName.substring(0,fileTypeIndex); // START HERE
+        }
         return generateHashFromGeneralMediaName(fileName);
     }
 

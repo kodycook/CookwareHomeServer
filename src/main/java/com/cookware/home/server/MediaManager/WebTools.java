@@ -83,9 +83,14 @@ public class WebTools {
                 html.append(inputLine);
             }
             response.close();
+
+            if(connection.getHeaderField(1).equals("nginx")){
+                log.error("Cannot access primewire - check VPN connection");
+                return "";
+            }
         }
         catch(SocketTimeoutException e){
-            log.error("Connection timed out, check VPN", e);
+            log.error("Connection timed out");
             return "";
         }
         catch (IOException e) {

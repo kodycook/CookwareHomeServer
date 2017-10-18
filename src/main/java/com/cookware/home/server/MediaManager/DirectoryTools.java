@@ -44,13 +44,13 @@ public class DirectoryTools {
     }
 
 
-    public boolean checkIfdirectorityexists (String directoryName){
+    public boolean checkIfPathExists(String directoryName){
         File directory = new File(directoryName);
         return directory.exists();
     }
 
     public boolean createNewDirectory(String directoryName){
-        if(checkIfdirectorityexists(directoryName)){
+        if(checkIfPathExists(directoryName)){
             return true;
         }
         try{
