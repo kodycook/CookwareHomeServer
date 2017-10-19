@@ -49,6 +49,9 @@ public class DownloadManager {
         log.info(String.format("Starting download: %s", mediaInfo.toString()));
         boolean downloadSuccess;
         final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo);
+        if(embeddedMediaUrlAndQuality.url.equals("")){
+            return null;
+        }
         if(embeddedMediaUrlAndQuality == null){
             log.error(String.format("This media item will need to be downloaded manually and has been set to the \"IGNORED\" state in the Database"));
             mediaInfo.STATE = DownloadState.IGNORED;
@@ -104,7 +107,7 @@ public class DownloadManager {
         }
         else if(mediaDownloadLinks.size() == 0){
             log.error(String.format("Could not find media URLS at %s", redirectedUrl));
-            return null;
+            return new DownloadLink("", 0);
         }
 
         return selectBestLinkByQuality(mediaDownloadLinks, mediaInfo.QUALITY);
@@ -149,6 +152,9 @@ public class DownloadManager {
         Scanner scan;
         String logicalLine;
         String firstPage = webTools.getWebPageHtml(url);
+        if(firstPage.equals("")){
+            return new ArrayList<>();
+        }
         Document document = Jsoup.parse(firstPage);
         if(document.getElementsByAttributeValue("name", "hash").size() == 0){
             log.error(String.format("Error retrieving hash code from %s",url));
@@ -163,6 +169,9 @@ public class DownloadManager {
         params.add(new BasicNameValuePair("inhu", "foff"));
 
         String secondPage = webTools.getWebPageHtml(url, WebTools.HttpRequestType.POST, params);
+        if(secondPage.equals("")){
+            return new ArrayList<>();
+        }
 
         int startOfUrlCodeInWebPage = secondPage.indexOf("lets_play_a_game='");
 
@@ -171,6 +180,9 @@ public class DownloadManager {
         logicalLine = scan.next();
 
         String thirdPage = webTools.getWebPageHtml("https://thevideo.me/vsign/player/"+logicalLine);
+        if(thirdPage.equals("")){
+            return new ArrayList<>();
+        }
 
         String[] encodedAttributes = thirdPage.split("\\|");
 
@@ -266,17 +278,15 @@ public class DownloadManager {
         downloadFilepath = MediaManager.tempPath;
         File output = new File(downloadFilepath, downloadFilename);
         try {
-
             return downloadMediaToFile(downloadUrl, output);
         } catch (Throwable throwable) {
-            log.error(String.format("Error downloading media from %s to %s:\n",downloadUrl, downloadFilename), throwable);
+            log.error(String.format("Error downloading media: %s (%s)\n", downloadFilename, throwable.getMessage()));
             return false;
         }
     }
 
 
     private boolean downloadMediaToFile(String downloadUrl, File outputfile) throws Throwable {
-        // TODO: Replace deprechiated HttpClient functionality with HttpUrlConnection
         long startTime = System.currentTimeMillis();
         URL url = new URL(downloadUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
