@@ -118,7 +118,7 @@ public class FileTransferrerRunnable implements Runnable {
                 FileUtils.moveFile(sourceFile, destinationFile);
             }
             catch (IOException e){
-                log.error("Issue moving file to Media Storage", e);
+                log.error("Issue moving file to Media Storage");
                 return;
             }
 
