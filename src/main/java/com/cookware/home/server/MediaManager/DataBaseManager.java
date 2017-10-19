@@ -25,7 +25,7 @@ public class DatabaseManager {
     }
 
     public void initialise() {
-        // TODO: Resort Database entries to make it easier to read
+        // TODO: Re-sort Database entries to make it easier to read
         databaseAttributes.add(new DatabaseEntryAttribute("ID", "BIGINT NOT NULL", BigInteger.class));
         databaseAttributes.add(new DatabaseEntryAttribute("NAME", "TEXT NOT NULL", String.class));
         databaseAttributes.add(new DatabaseEntryAttribute("TYPE", "TINYINT NOT NULL", Integer.class));
@@ -76,9 +76,7 @@ public class DatabaseManager {
 
 
     public void updatePriority(BigInteger mediaId, int priority){
-
-        // TODO: Uncomment this for final deployment
-//        updateDatabaseValue(mediaId, "QUALITY", priority);
+        updateDatabaseValue(mediaId, "QUALITY", priority);
     }
 
 
@@ -180,7 +178,7 @@ public class DatabaseManager {
     }
 
 
-    // TODO: Have to finish this (updateEntireDatabaseEntry) method
+    // TODO: Finish this (updateEntireDatabaseEntry) method
     public void updateEntireDatabaseEntry(MediaInfo mediaInfo){
     }
 

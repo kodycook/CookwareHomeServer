@@ -17,8 +17,6 @@ public class MediaManager {
 
 
     public void start(){
-        // TODO: Sort out syncronised access to variables
-
         Thread thread = new Thread(mediaManagerRunnable);
         thread.start();
     }

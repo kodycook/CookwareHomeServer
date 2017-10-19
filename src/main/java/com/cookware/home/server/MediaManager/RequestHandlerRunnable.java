@@ -60,9 +60,9 @@ public class RequestHandlerRunnable implements Runnable {
             } else if (key.equals("quality")){
                 quality = (String) parameters.get(key);
             }
-            log.info(String.format("Received Media Request with attributes: URL: %s",url));
-            mediaManager.addNewMediaRequest(url, priority, quality);
         }
+        log.info(String.format("Received Media Request with attributes: URL: %s",url));
+        mediaManager.addNewMediaRequest(url, priority, quality);
     }
 
     public class RootHandler implements HttpHandler  {

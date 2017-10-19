@@ -14,8 +14,6 @@ public class FileTransferrer {
         }
 
         public void start(){
-            // TODO: Sort out syncronised access to variables
-
             Thread thread = new Thread(fileTransferrerRunnable);
             thread.start();
         }

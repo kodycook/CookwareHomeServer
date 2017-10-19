@@ -21,6 +21,7 @@ import java.util.List;
 public class MediaManagerRunnable implements Runnable{
     private static final Logger log = Logger.getLogger(MediaManagerRunnable.class);
     // TODO: Add in a Statistics Manager
+    // TODO: Sort out syncronised access to variables
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager = new DatabaseManager(MediaManager.databaseName);
@@ -41,7 +42,7 @@ public class MediaManagerRunnable implements Runnable{
         MediaInfo currentMedia;
 
         // TODO: Update TV Show object when all episodes are downloaded
-        // TODO: FIX THE TIMEOUT ISSUE
+        // TODO: Find a way to force download objects with a priority of 0
 
         fileTransferrer.start();
 

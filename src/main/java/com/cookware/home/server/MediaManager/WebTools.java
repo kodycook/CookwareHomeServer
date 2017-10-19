@@ -136,7 +136,6 @@ public class WebTools {
 
             boolean redirect = false;
 
-            // normally, 3xx is redirect
             int status = connection.getResponseCode();
             if (status != HttpURLConnection.HTTP_OK) {
                 if (status == HttpURLConnection.HTTP_MOVED_TEMP
