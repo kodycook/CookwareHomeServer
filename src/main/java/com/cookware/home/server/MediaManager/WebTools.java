@@ -94,7 +94,7 @@ public class WebTools {
             return "";
         }
         catch (IOException e) {
-            log.error(e);
+            log.error("Issue accessing internet");
             return "";
         }
         return html.toString();

@@ -13,10 +13,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,9 +33,6 @@ import java.util.regex.Pattern;
  * Created by Kody on 13/09/2017.
  */
 public class DownloadManager {
-    // TODO: Add returns to identify failed downloads
-    // TODO: Add logs to announce the progress of downloads
-    // TODO: Add timeout method on downloads
     // TODO: Implement interfaces to create different versions of the web scrapers
     private static final Logger log = Logger.getLogger(DownloadManager.class);
     private final int downloadBlockSize = 2048;
@@ -276,17 +277,14 @@ public class DownloadManager {
 
     private boolean downloadMediaToFile(String downloadUrl, File outputfile) throws Throwable {
         // TODO: Replace deprechiated HttpClient functionality with HttpUrlConnection
-        HttpGet httpget2 = new HttpGet(downloadUrl);
         long startTime = System.currentTimeMillis();
+        URL url = new URL(downloadUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setReadTimeout(30000);
 
-        log.debug("Executing " + httpget2.getURI());
-        HttpClient httpclient2 = new DefaultHttpClient();
-        HttpResponse response2 = httpclient2.execute(httpget2);
-        HttpEntity entity2 = response2.getEntity();
-        
-        if (entity2 != null && response2.getStatusLine().getStatusCode() == 200) {
-            long length = entity2.getContentLength();
-            InputStream instream2 = entity2.getContent();
+        if (conn.getResponseCode() == 200) {
+            InputStream inputStream = new BufferedInputStream(conn.getInputStream());
+            long length = Long.parseLong(conn.getHeaderFields().get("Content-Length").get(0));
             System.out.println("Writing " + length + " bytes to " + outputfile);
             if (outputfile.exists()) {
                 outputfile.delete();
@@ -297,16 +295,21 @@ public class DownloadManager {
                 byte[] buffer = new byte[this.downloadBlockSize];
                 int count = -1;
                 try {
-                    while ((count = instream2.read(buffer)) != -1) {
+                    while ((count = inputStream.read(buffer)) != -1) {
                         printProgress(startTime, (int) length / this.downloadBlockSize + 1, i);
                         i++;
                         outstream.write(buffer, 0, count);
                     }
                 }
                 catch (SocketException e){
-                    log.error(String.format("Issue downloading: %s", downloadUrl));
+                    log.error(String.format("Issue downloading: %s", outputfile));
                     return false;
                 }
+                catch (SocketTimeoutException e){
+                    log.error("Download timed out mid-download");
+                    return false;
+                }
+
                 outstream.flush();
             } finally {
                 outstream.close();
@@ -329,7 +332,6 @@ public class DownloadManager {
 
         StringBuilder string = new StringBuilder(140);
         int percent = (int) (current * 100 / total);
-        // TODO: Update "512" below with downloadBlockSize variable calculation
         string
                 .append('\r')
                 .append(String.join("", Collections.nCopies(percent == 0 ? 2 : 2 - (int) (Math.log10(percent)), " ")))
@@ -339,8 +341,10 @@ public class DownloadManager {
                 .append(String.join("", Collections.nCopies(100 - percent, " ")))
                 .append(']')
                 .append(String.join("", Collections.nCopies((int) (Math.log10(total)) - (int) (Math.log10(current)), " ")))
-                .append(String.format(" %.2f/%.2fMB ", ((double) current)/512, ((double) total)/512))
-                .append(String.format("(%.2fMB/s), ", ((double) current)/512/TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime)))
+                .append(String.format(" %.2f/%.2fMB ", ((double) current)*this.downloadBlockSize/Math.pow(2,20),
+                        ((double) total)*this.downloadBlockSize/Math.pow(2,20)))
+                .append(String.format("(%.2fMB/s), ", ((double) current)*this.downloadBlockSize/Math.pow(2,20)/
+                        TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime)))
                 .append(String.format("ETA: %s", etaHms));
 
         System.out.print(string);

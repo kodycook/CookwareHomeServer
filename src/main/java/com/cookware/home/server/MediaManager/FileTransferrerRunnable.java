@@ -45,7 +45,6 @@ public class FileTransferrerRunnable implements Runnable {
                                     currentMediaInfo.PATH = currentFileName;
                                 }
                                 transferMedia(currentMediaInfo);
-                                databaseManager.updateState(currentMediaInfo.ID, DownloadState.FINISHED);
                             }
                             else if (currentMediaInfo.STATE.equals(DownloadState.IGNORED)){
                                 currentFile.delete();
@@ -119,7 +118,8 @@ public class FileTransferrerRunnable implements Runnable {
                 FileUtils.moveFile(sourceFile, destinationFile);
             }
             catch (IOException e){
-                log.error("Issue moving file to Media Storage");
+                log.error("Issue moving file to Media Storage", e);
+                return;
             }
 
             log.info(String.format("Finished Moving %s: %s -> %s",mediaInfo.NAME ,oldFullFileName,newFullFileName));
@@ -129,6 +129,7 @@ public class FileTransferrerRunnable implements Runnable {
 
         }catch(Exception e){
             log.error(String.format("Issue trying to move file: %s", mediaInfo.NAME),e);
+            return;
         }
     }
 
