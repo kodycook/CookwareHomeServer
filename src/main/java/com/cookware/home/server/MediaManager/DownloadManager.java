@@ -274,6 +274,7 @@ public class DownloadManager {
 
 
     private boolean downloadMediaToFile(String downloadUrl, File outputfile) throws Throwable {
+        // TODO: Replace deprechiated HttpClient functionality with HttpUrlConnection
         HttpGet httpget2 = new HttpGet(downloadUrl);
         long startTime = System.currentTimeMillis();
 
@@ -292,11 +293,11 @@ public class DownloadManager {
             FileOutputStream outstream = new FileOutputStream(outputfile);
             int i = 1;
             try {
-                byte[] buffer = new byte[2048];
+                byte[] buffer = new byte[this.downloadBlockSize];
                 int count = -1;
                 try {
                     while ((count = instream2.read(buffer)) != -1) {
-                        printProgress(startTime, (int) length / 2048 + 1, i);
+                        printProgress(startTime, (int) length / this.downloadBlockSize + 1, i);
                         i++;
                         outstream.write(buffer, 0, count);
                     }
@@ -327,6 +328,7 @@ public class DownloadManager {
 
         StringBuilder string = new StringBuilder(140);
         int percent = (int) (current * 100 / total);
+        // TODO: Update "512" below with downloadBlockSize variable calculation
         string
                 .append('\r')
                 .append(String.join("", Collections.nCopies(percent == 0 ? 2 : 2 - (int) (Math.log10(percent)), " ")))
