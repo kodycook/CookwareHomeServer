@@ -34,6 +34,7 @@ public class DownloadManager {
     // TODO: Add timeout method on downloads
     // TODO: Implement interfaces to create different versions of the web scrapers
     private static final Logger log = Logger.getLogger(DownloadManager.class);
+    private final int downloadBlockSize = 2048;
     private final WebTools webTools = new WebTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager;
