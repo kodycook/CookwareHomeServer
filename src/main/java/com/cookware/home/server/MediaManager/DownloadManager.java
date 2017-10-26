@@ -49,12 +49,14 @@ public class DownloadManager {
         log.info(String.format("Starting download: %s", mediaInfo.toString()));
         boolean downloadSuccess;
         final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo);
-        if(embeddedMediaUrlAndQuality.url.equals("")){
-            return null;
-        }
         if(embeddedMediaUrlAndQuality == null){
             log.error(String.format("This media item will need to be downloaded manually and has been set to the \"IGNORED\" state in the Database"));
             mediaInfo.STATE = DownloadState.IGNORED;
+            databaseManager.updateState(mediaInfo.ID, mediaInfo.STATE);
+            return null;
+        }
+        if(embeddedMediaUrlAndQuality.url.equals("")){
+            mediaInfo.STATE = DownloadState.FAILED;
             databaseManager.updateState(mediaInfo.ID, mediaInfo.STATE);
             return null;
         }
@@ -84,7 +86,8 @@ public class DownloadManager {
     private DownloadLink bridgeToVideoMe(MediaInfo mediaInfo){
         final String html = webTools.getWebPageHtml(mediaInfo.URL);
         if(html.equals("")){
-            System.exit(1);
+            log.error(String.format("Unknown issue obtaining html for %s", mediaInfo.URL));
+            return new DownloadLink("", 0);
         }
         final String urlExtension = findVideoMeLinkInHtml(html);
         if (urlExtension == null){
@@ -105,7 +108,7 @@ public class DownloadManager {
         if(mediaDownloadLinks == null){
             return null;
         }
-        else if(mediaDownloadLinks.size() == 0){
+        else if(mediaDownloadLinks.isEmpty()){
             log.error(String.format("Could not find media URLS at %s", redirectedUrl));
             return new DownloadLink("", 0);
         }

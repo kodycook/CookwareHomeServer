@@ -102,6 +102,7 @@ public class DatabaseManager {
 
             if (!querySucceeded) {
                 log.error("Failed to initialise Database");
+                log.error("shutting down because data base could not be initialised");
                 System.exit(1);
             }
             log.error("Created new Database");
@@ -173,6 +174,7 @@ public class DatabaseManager {
 
         if (!querySucceeded) {
             log.error(String.format("Failed to update Database ID: %d Attribute: %s Value: %s",id, key, databaseAttributeValueString));
+            log.error("Shutting down due to lack of database access");
             System.exit(1);
         }
     }
@@ -338,6 +340,7 @@ public class DatabaseManager {
 
         } catch (Exception e) {
             log.error("Issue checking if Database exists", e);
+            log.error("Shutting down due to lack of database access");
             System.exit(1);
         }
         return exists;

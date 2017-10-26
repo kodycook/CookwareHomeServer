@@ -24,12 +24,14 @@ public class Launcher {
 
         log.info("Launcher Started");
 
-        MediaManager mediaManager = new MediaManager();
-        RequestHandler requestHandler = new RequestHandler(mediaManager);
-        ClientStub clientStub = new ClientStub();
+//        MediaManager mediaManager = new MediaManager();
+//        ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
+        WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler();
+//        ClientStub clientStub = new ClientStub();
 
-        clientStub.start();
-        requestHandler.start();
-        mediaManager.start();
+//        clientStub.start();
+//        serverRequestHandler.start();
+        webAppRequestHandler.start();
+//        mediaManager.start();
     }
 }

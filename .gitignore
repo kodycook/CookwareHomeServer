@@ -13,6 +13,7 @@
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
+.idea # Added by me to stop any IDE files from being stored in the repo (may want to remove later)
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/

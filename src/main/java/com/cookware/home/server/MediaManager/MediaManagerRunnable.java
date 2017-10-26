@@ -75,19 +75,19 @@ public class MediaManagerRunnable implements Runnable{
                 }
 
                 updateState(currentMedia, DownloadState.DOWNLOADING);
+                // TODO: Perform a check of the network here
                 downloadManager.downloadMedia(currentMedia);
             }
 
 
             if (hasDownload){
-                log.info("No more media to download");
                 hasDownload = false;
             }
             try {
                 Thread.sleep(60000);
             } catch (InterruptedException e) {
                 log.error("MediaManager thread interrupted", e);
-                System.exit(-1);
+                System.exit(1);
             }
         }
     }
@@ -166,7 +166,7 @@ public class MediaManagerRunnable implements Runnable{
                 addMediaToDataBase(episodeInfo);
             }
         }
-        log.info(String.format("Finished adding %s to Data Base", info.NAME));
+        log.info(String.format("Finished adding %s to Database", info.NAME));
     }
 
 

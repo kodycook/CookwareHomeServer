@@ -15,14 +15,13 @@ import java.util.*;
 /**
  * Created by Kody on 5/09/2017.
  */
-public class RequestHandlerRunnable implements Runnable {
+public class WebAppRequestHandlerRunnable implements Runnable {
+    private final Logger log = Logger.getLogger(WebAppRequestHandlerRunnable.class);
+    private final WebAppScraper webAppScraper = new WebAppScraper();
     private final int port;
-    private final MediaManager mediaManager;
-    private  final Logger log = Logger.getLogger(RequestHandlerRunnable.class);
 
-    public RequestHandlerRunnable(MediaManager mMediaManager){
-        mediaManager = mMediaManager;
-        port = 9000;
+    public WebAppRequestHandlerRunnable(){
+        port = 9001;
     }
 
     @Override
@@ -47,29 +46,25 @@ public class RequestHandlerRunnable implements Runnable {
         server.start();
     }
 
-    public void addMedia(Map<String, Object> parameters){
-        String url = "";
-        int priority = 2;
-        String quality = "MIN";
+    public List<WebAppMediaItem> getMediaOptions(Map<String, Object> parameters) {
+        String search = "";
+        int page = 1;
 
-        for (String key : parameters.keySet()){
-            if (key.equals("url")){
-                url = (String) parameters.get(key);
-            } else if (key.equals("priority")){
-                priority = Integer.parseInt((String) parameters.get(key));
-            } else if (key.equals("quality")){
-                quality = (String) parameters.get(key);
+        for (String key : parameters.keySet()) {
+            if (key.equals("search")) {
+                search = (String) parameters.get(key);
+            } else if (key.equals("page")) {
+                page = Integer.parseInt((String) parameters.get(key));
             }
+            log.info(String.format("Received Media Request with attributes: %s", parameters.toString()));
         }
-        log.info(String.format("Received Media Request with attributes: URL: %s",url));
-        mediaManager.addNewMediaRequest(url, priority, quality);
+        return webAppScraper.getMediaOptions(search, page);
     }
 
     public class RootHandler implements HttpHandler  {
 
         @Override
         public void handle(HttpExchange he) throws IOException {
-
             String response = "<h1>Server start success if you see this message</h1>" + "<h1>Port: " + port + "</h1>";
             he.sendResponseHeaders(200, response.length());
             OutputStream os = he.getResponseBody();
@@ -116,6 +111,9 @@ public class RequestHandlerRunnable implements Runnable {
 
             os.close();
             he.close();
+
+            List mediaItems = getMediaOptions(parameters);
+            // TODO: Convert the media Items into the JSON for sending back to the client
         }
     }
 
@@ -141,8 +139,6 @@ public class RequestHandlerRunnable implements Runnable {
             os.write(response.getBytes());
             os.close();
             he.close();
-
-            addMedia(parameters);
         }
     }
 

@@ -62,7 +62,7 @@ public class FileTransferrerRunnable implements Runnable {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
                 log.error("MediaManager thread interrupted", e);
-                System.exit(-1);
+                System.exit(1);
             }
         }
     }
