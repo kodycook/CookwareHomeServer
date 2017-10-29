@@ -29,10 +29,10 @@ public class WebAppScraper {
     public List<WebAppMediaItem> getMediaOptions(String searchQuery, int page){
         String url;
         if((page == 0 )||(page == 1)){
-            url = baseUrl + "/index.php?search_keywords=" + searchQuery;
+            url = baseUrl + "/index.php?search_keywords=" + searchQuery.replace(' ', '+');
         }
         else{
-            url = baseUrl + "/index.php?search_keywords=" + searchQuery + "&page=" + page;
+            url = baseUrl + "/index.php?search_keywords=" + searchQuery.replace(' ', '+') + "&page=" + page;
         }
         return getMediaOptionsFromUrl(url);
     }
@@ -41,8 +41,6 @@ public class WebAppScraper {
         String result = "";
         Scanner consoleScanner = new Scanner(System.in);
         final List<WebAppMediaItem> foundMedia = new ArrayList<>();
-
-        System.out.println(url);
 
         // TODO: Check internet connection
         URLConnection connection = null;
@@ -53,6 +51,7 @@ public class WebAppScraper {
             response = connection.getInputStream();
         } catch (IOException e) {
             log.error("Url is not in a compatible format");
+            return null;
         }
 
         if(connection.getHeaderField(1).equals("nginx")){
@@ -76,9 +75,12 @@ public class WebAppScraper {
         String title;
         String imageUrl;
         String linkUrl;
+        int tagIndex;
         for (Element media : matchedMedia) {
             title = media.getElementsByAttribute("href").attr("title").substring(6);
-            imageUrl = "http:" + media.getElementsByAttribute("src").attr("src");
+            imageUrl = media.getElementsByAttribute("src").attr("src");
+            tagIndex = imageUrl.lastIndexOf("/");
+            imageUrl = imageUrl.substring(tagIndex+1);
             linkUrl = this.baseUrl + media.getElementsByAttribute("title").attr("href");
             foundMedia.add(new WebAppMediaItem(title, imageUrl, linkUrl));
         }

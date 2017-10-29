@@ -27,7 +27,6 @@ public class ServerRequestHandlerRunnable implements Runnable {
 
     @Override
     public void run() {
-
         try{
             initialiseServer();
         } catch (IOException e) {
@@ -47,7 +46,7 @@ public class ServerRequestHandlerRunnable implements Runnable {
         server.start();
     }
 
-    public void addMedia(Map<String, Object> parameters){
+    public String addMedia(Map<String, Object> parameters){
         String url = "";
         int priority = 3;
         String quality = "MIN";
@@ -62,7 +61,7 @@ public class ServerRequestHandlerRunnable implements Runnable {
             }
         }
         log.info(String.format("Received Media Request with attributes: URL: %s",url));
-        mediaManager.addNewMediaRequest(url, priority, quality);
+        return mediaManager.addNewMediaRequest(url, priority, quality);
     }
 
     public class RootHandler implements HttpHandler  {
@@ -131,18 +130,14 @@ public class ServerRequestHandlerRunnable implements Runnable {
             parseQuery(query, parameters);
 
             // send response
-            String response = "";
-            for (String key : parameters.keySet()){
-                response += key + " = " + parameters.get(key) + "\n";
-            }
+            String response = addMedia(parameters);
 
+            he.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
             he.sendResponseHeaders(200, response.length());
             OutputStream os = he.getResponseBody();
             os.write(response.getBytes());
             os.close();
             he.close();
-
-            addMedia(parameters);
         }
     }
 

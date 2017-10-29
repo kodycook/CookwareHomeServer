@@ -140,7 +140,7 @@ public class MediaManagerRunnable implements Runnable{
     }
 
 
-    public void addNewMediaRequest(String url, int priority, String qualityString){
+    public String addNewMediaRequest(String url, int priority, String qualityString){
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
 
@@ -150,12 +150,16 @@ public class MediaManagerRunnable implements Runnable{
 
         if (episodes.isEmpty()) {
             info.TYPE = MediaType.MOVIE;
-            addMediaToDataBase(info);
+            if(!addMediaToDataBase(info)){
+                return String.format("%s already in database", info.NAME);
+            }
         }
         else {
             info.TYPE = MediaType.TV;
             // ASK WILL IF IT'S OK TO MODIFY AN OBJECT WHOSE POINTER IS PASSED AS A PARAMETER OR SHOULD THE OBJECT POINTER BE RETURNED INDICATING THAT THE OBJECT HAS BEEN MODIFIED
-            addMediaToDataBase(info);
+            if(!addMediaToDataBase(info)){
+                return String.format("%s already in database", info.NAME);
+            }
 
             for(MediaInfo episodeInfo: episodes){
                 episodeInfo.TYPE = MediaType.EPISODE;
@@ -167,6 +171,7 @@ public class MediaManagerRunnable implements Runnable{
             }
         }
         log.info(String.format("Finished adding %s to Database", info.NAME));
+        return String.format("Successfully added %s to Database", info.NAME);
     }
 
 

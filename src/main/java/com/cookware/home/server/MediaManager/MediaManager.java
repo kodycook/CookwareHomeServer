@@ -22,7 +22,7 @@ public class MediaManager {
         thread.start();
     }
 
-    public void addNewMediaRequest(String url, int priority, String qualityString){
-        mediaManagerRunnable.addNewMediaRequest(url, priority, qualityString);
+    public String addNewMediaRequest(String url, int priority, String qualityString){
+        return mediaManagerRunnable.addNewMediaRequest(url, priority, qualityString);
     }
 }

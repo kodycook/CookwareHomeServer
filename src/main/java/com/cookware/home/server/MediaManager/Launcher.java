@@ -24,14 +24,14 @@ public class Launcher {
 
         log.info("Launcher Started");
 
-//        MediaManager mediaManager = new MediaManager();
-//        ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
+        MediaManager mediaManager = new MediaManager();
+        ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
         WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler();
 //        ClientStub clientStub = new ClientStub();
 
 //        clientStub.start();
-//        serverRequestHandler.start();
+        serverRequestHandler.start();
         webAppRequestHandler.start();
-//        mediaManager.start();
+        mediaManager.start();
     }
 }

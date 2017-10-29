@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class Scheduler {
     private static final Logger log = Logger.getLogger(Scheduler.class);
     private final CsvManager csvManager = new CsvManager();
-    private final autoDownload downloading = autoDownload.MANUAL_ON;
+    private final autoDownload downloading = autoDownload.AUTOMATIC;
     private final int daysInAWeek = 7;
     private final int hoursInADay = 24;
     private final String schedulerFileName;
@@ -27,6 +27,7 @@ public class Scheduler {
         }
         else {
             loadSchedule();
+//            System.out.println(toString());
         }
     }
 
@@ -69,7 +70,7 @@ public class Scheduler {
         }
         this.autoDownloadState = currentlyDownloading;
 
-        return weekSchedule[hour][day];
+        return currentlyDownloading;
     }
 
 
@@ -122,11 +123,37 @@ public class Scheduler {
     private void convertStringArrayToSchedule(String[][] savedConfig){
         for(int hour = 0; hour < this.hoursInADay; hour++){
             for(int day = 0; day < this.daysInAWeek; day++){
-                this.weekSchedule[hour][day] = savedConfig[hour + 1][day + 1].equals("x");
+                if ((savedConfig[hour + 1][day + 1].equals("x")) || (savedConfig[hour + 1][day + 1].equals("x\r")))
+                    this.weekSchedule[hour][day] = true;
+                else {
+                    this.weekSchedule[hour][day] = false;
+                }
             }
         }
     }
 
+    public String toString(){
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(String.format("\t\t\t\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+                "Monday   ",
+                "Tuesday  ",
+                "Wednesday",
+                "Thursday ",
+                "Friday   ",
+                "Saturday ",
+                "Sunday   "));
+
+
+        for(int hour = 0; hour < this.hoursInADay; hour++){
+            stringBuilder.append(String.format("\n%02d:00 - %02d:59\t", hour, hour));
+            for(int day = 0; day < this.daysInAWeek; day++){
+                stringBuilder.append(String.format("%s\t\t\t", this.weekSchedule[hour][day] ? "x" : ""));
+            }
+        }
+
+        return stringBuilder.toString();
+    }
 
     public enum autoDownload{
         AUTOMATIC, MANUAL_ON, MANUAL_OFF
