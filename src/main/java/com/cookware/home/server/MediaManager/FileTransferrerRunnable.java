@@ -29,7 +29,7 @@ public class FileTransferrerRunnable implements Runnable {
 
         while(true){
             if(mediaStorageAvailable()){
-                listOfFiles = directoryTools.getImmediateFilesInDirectory(MediaManager.tempPath);
+                listOfFiles = directoryTools.getImmediateFilesInDirectory(ConfigManager.tempPath);
                 for(File currentFile:listOfFiles){
                     if (currentFile.isFile()) {
                         currentFileName = currentFile.getName();
@@ -68,7 +68,7 @@ public class FileTransferrerRunnable implements Runnable {
     }
 
     public boolean mediaStorageAvailable(){
-        return directoryTools.checkIfNetworkLocationAvailable(MediaManager.finalPath);
+        return directoryTools.checkIfNetworkLocationAvailable(ConfigManager.finalPath);
     }
 
     private void transferMedia(MediaInfo mediaInfo){
@@ -81,26 +81,26 @@ public class FileTransferrerRunnable implements Runnable {
         boolean moveSuccess = false;
         try{
             if (mediaInfo.TYPE.equals(MediaType.MOVIE)) {
-                oldFullFileName = MediaManager.tempPath + "\\" + mediaInfo.PATH;
+                oldFullFileName = ConfigManager.tempPath + "\\" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
                 localDirectory = "\\Movies\\" + fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
-                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                directoryTools.createNewDirectory(ConfigManager.finalPath + localDirectory);
                 mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
-                newFullFileName = MediaManager.finalPath + mediaInfo.PATH;
+                newFullFileName = ConfigManager.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
             }
             else if (mediaInfo.TYPE.equals(MediaType.EPISODE)){
-                oldFullFileName = MediaManager.tempPath + "\\" + mediaInfo.PATH;
+                oldFullFileName = ConfigManager.tempPath + "\\" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
                 localDirectory = "\\TV Shows\\" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItemWithMatchedId(mediaInfo.PARENTSHOWID));
-                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                directoryTools.createNewDirectory(ConfigManager.finalPath + localDirectory);
                 localDirectory += String.format("\\Season %d",mediaInfo.getSeason());
-                directoryTools.createNewDirectory(MediaManager.finalPath + localDirectory);
+                directoryTools.createNewDirectory(ConfigManager.finalPath + localDirectory);
                 mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
-                newFullFileName = MediaManager.finalPath + mediaInfo.PATH;
+                newFullFileName = ConfigManager.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
             }
@@ -135,7 +135,7 @@ public class FileTransferrerRunnable implements Runnable {
 
     private void transferUnidentifiedFile(String fileName){
         // WILL IS THE APPROACH I'VE TAKEN IN THIS METHOD POOR IMPLEMENTATION?
-        String path = MediaManager.tempPath;
+        String path = ConfigManager.tempPath;
         directoryTools.createNewDirectory(path);
         File sourceFile = new File(path + "\\" + fileName);
 

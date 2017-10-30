@@ -24,10 +24,12 @@ public class MediaManagerRunnable implements Runnable{
     // TODO: Sort out syncronised access to variables
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
-    private final DatabaseManager databaseManager = new DatabaseManager(MediaManager.databaseName);
+    // TODO: Load in this config as one of the arguments to main
+    private final ConfigManager configManager = new ConfigManager("config/config.properties");
+    private final DatabaseManager databaseManager = new DatabaseManager(ConfigManager.databaseName);
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final Scheduler scheduler = new Scheduler(MediaManager.scheduleFileName);
+    private final Scheduler scheduler = new Scheduler(ConfigManager.scheduleFileName);
 
     public MediaManagerRunnable(){
         databaseManager.initialise();
@@ -43,6 +45,7 @@ public class MediaManagerRunnable implements Runnable{
 
         // TODO: Update TV Show object when all episodes are downloaded
         // TODO: Find a way to force download objects with a priority of 0
+        // TODO: Check internet connectivity before attempting downloads
 
         fileTransferrer.start();
 
@@ -54,7 +57,7 @@ public class MediaManagerRunnable implements Runnable{
                     resetFailedDownloadMediaItems();
                     retrieveQueuedMediaFromDatabase(mediaQueue);
                     log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
-                    if (!directoryTools.checkIfNetworkLocationAvailable(MediaManager.finalPath)){
+                    if (!directoryTools.checkIfNetworkLocationAvailable(ConfigManager.finalPath)){
                         log.warn("Media Storage not available");
                     }
                     else {

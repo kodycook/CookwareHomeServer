@@ -9,12 +9,6 @@ import org.apache.log4j.Logger;
 public class MediaManager {
     private final MediaManagerRunnable mediaManagerRunnable = new MediaManagerRunnable();
     private static final Logger log = Logger.getLogger(MediaManager.class);
-    // TODO: Pull in these files from config
-    public static final String databaseName = "media.db";
-    public static final String scheduleFileName = "C:\\Users\\maste\\Software\\IdeaProjects\\CookwareHomeServer\\config\\Schedule.csv";
-    public static final String tempPath = "C:\\Users\\maste\\Software\\IdeaProjects\\CookwareHomeServer\\Media";
-    public static final String finalPath = "\\\\WDMYCLOUDEX2\\Public\\Media";
-//    public static String finalPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
 
 
     public void start(){

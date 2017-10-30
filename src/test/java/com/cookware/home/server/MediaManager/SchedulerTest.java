@@ -7,7 +7,7 @@ import junit.framework.TestCase;
  */
 public class SchedulerTest extends TestCase {
     public void testIsDownloading() throws Exception {
-        System.out.println(new Scheduler(MediaManager.scheduleFileName).isDownloading());
+        System.out.println(new Scheduler(ConfigManager.scheduleFileName).isDownloading());
     }
 
     public void testSplit() throws Exception {

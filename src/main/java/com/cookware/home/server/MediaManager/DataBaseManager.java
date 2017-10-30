@@ -89,7 +89,7 @@ public class DatabaseManager {
     private void initialiseDatabase(){
         boolean querySucceeded = false;
 
-        this.url = "jdbc:sqlite:data/" + fileName;
+        this.url = fileName;
 
         if(!checkIfDatabaseExists()) {
             String sql = "CREATE TABLE MEDIA(";
