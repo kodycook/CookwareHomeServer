@@ -6,12 +6,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.print.attribute.standard.Media;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -25,11 +22,10 @@ public class MediaManagerRunnable implements Runnable{
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     // TODO: Load in this config as one of the arguments to main
-    private final ConfigManager configManager = new ConfigManager("config/config.properties");
-    private final DatabaseManager databaseManager = new DatabaseManager(ConfigManager.databaseName);
+    private final DatabaseManager databaseManager = new DatabaseManager(Launcher.databasePath);
     private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
     private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final Scheduler scheduler = new Scheduler(ConfigManager.scheduleFileName);
+    private final Scheduler scheduler = new Scheduler(Launcher.scheduleFileName);
 
     public MediaManagerRunnable(){
         databaseManager.initialise();
@@ -57,7 +53,7 @@ public class MediaManagerRunnable implements Runnable{
                     resetFailedDownloadMediaItems();
                     retrieveQueuedMediaFromDatabase(mediaQueue);
                     log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
-                    if (!directoryTools.checkIfNetworkLocationAvailable(ConfigManager.finalPath)){
+                    if (!directoryTools.checkIfNetworkLocationAvailable(Launcher.finalPath)){
                         log.warn("Media Storage not available");
                     }
                     else {

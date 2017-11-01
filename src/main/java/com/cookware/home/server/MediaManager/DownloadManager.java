@@ -278,7 +278,7 @@ public class DownloadManager {
 
     public boolean newDownload(String downloadUrl, String downloadFilename, MediaType type){
         String downloadFilepath = "";
-        downloadFilepath = ConfigManager.tempPath;
+        downloadFilepath = Launcher.tempPath;
         File output = new File(downloadFilepath, downloadFilename);
         try {
             return downloadMediaToFile(downloadUrl, output);

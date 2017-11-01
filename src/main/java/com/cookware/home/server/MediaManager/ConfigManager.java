@@ -1,10 +1,6 @@
 package com.cookware.home.server.MediaManager;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
-import org.apache.log4j.Logger;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -13,12 +9,8 @@ import java.util.Properties;
  * Created by Kody on 30/10/2017.
  */
 public class ConfigManager {
-    private static final Logger log = Logger.getLogger(ConfigManager.class);
-    public static String databaseName;
-    public static String scheduleFileName;
-    public static String tempPath;
-    public static String finalPath;
-//    public static String finalPath = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\Media";
+//    private static final Logger log = Logger.getLogger(ConfigManager.class); // Cannot be used until logs are instanciated
+    // TODO: Create a config object and separate it into a different class
 
     public ConfigManager(String path){
         Properties properties = new Properties();
@@ -29,10 +21,12 @@ public class ConfigManager {
             input = new FileInputStream(path);
             properties.load(input);
 
-            databaseName = properties.getProperty("database");
-            scheduleFileName = properties.getProperty("schedule");
-            tempPath = properties.getProperty("tempMedia");
-            finalPath = properties.getProperty("finalMedia");
+            Launcher.logPropertiesPath = properties.getProperty("logProperties");
+            Launcher.logsPath = properties.getProperty("logs");
+            Launcher.databasePath = properties.getProperty("database");
+            Launcher.scheduleFileName = properties.getProperty("schedule");
+            Launcher.tempPath = properties.getProperty("tempMedia");
+            Launcher.finalPath = properties.getProperty("finalMedia");
 
         } catch (IOException ex) {
             ex.printStackTrace();

@@ -9,7 +9,7 @@ import java.io.File;
  */
 public class CsvManagerTest extends TestCase {
     public void testCreateFile() throws Exception {
-        final String csvFile = "C:\\Users\\maste\\IdeaProjects\\CookwareHomeServer\\test.csv";
+        final String csvFile = "C:\\Users\\maste\\\\Software\\IdeaProjects\\CookwareHomeServer\\test.csv";
         final File file = new File(csvFile);
 
         assert(!file.exists());

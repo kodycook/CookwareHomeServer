@@ -17,11 +17,12 @@ public class DatabaseManager {
     private DirectoryTools directoryTools = new DirectoryTools();
     private final Logger log = Logger.getLogger(DatabaseManager.class);
     private final List<DatabaseEntryAttribute> databaseAttributes  = new ArrayList<DatabaseEntryAttribute>();
-    private String fileName;
-    private String url;
+    private String databasePath;
+    private String driverPath;
 
-    public DatabaseManager(String mFileName) {
-        this.fileName = mFileName;
+    public DatabaseManager(String mFilePath) {
+        this.databasePath = mFilePath;
+        this.driverPath = "jdbc:sqlite:" + this.databasePath + "\\media.db";
     }
 
     public void initialise() {
@@ -41,7 +42,7 @@ public class DatabaseManager {
         databaseAttributes.add(new DatabaseEntryAttribute("PARENTNAME", "TEXT", String.class));
         databaseAttributes.add(new DatabaseEntryAttribute("EPISODE", "TEXT", float.class));
 
-        directoryTools.createNewDirectory("data");
+        directoryTools.createNewDirectory(databasePath);
 
         initialiseDatabase();
     }
@@ -88,8 +89,6 @@ public class DatabaseManager {
 
     private void initialiseDatabase(){
         boolean querySucceeded = false;
-
-        this.url = fileName;
 
         if(!checkIfDatabaseExists()) {
             String sql = "CREATE TABLE MEDIA(";
@@ -323,7 +322,7 @@ public class DatabaseManager {
         boolean exists = false;
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(this.url);
+            conn = DriverManager.getConnection(this.driverPath);
 
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet res = meta.getTables(null, null, "MEDIA",
@@ -368,7 +367,7 @@ public class DatabaseManager {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(this.url);
+            conn = DriverManager.getConnection(this.driverPath);
             conn.setAutoCommit(false);
 
             log.debug(String.format("SQL sent to Database: \"%s\"", query));
@@ -396,7 +395,7 @@ public class DatabaseManager {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(this.url);
+            conn = DriverManager.getConnection(this.driverPath);
             conn.setAutoCommit(false);
 
             log.debug(String.format("SQL sent to Database: \"%s\"", query));

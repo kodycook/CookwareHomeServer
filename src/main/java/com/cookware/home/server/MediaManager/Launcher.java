@@ -9,7 +9,14 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Launcher {
     private static final Logger log = Logger.getLogger(Launcher.class);
-    final static String logPropertiesPath = "config\\log4j.xml";
+    public static String logPropertiesPath;
+    public static String logsPath;
+    public static String databasePath;
+    public static String scheduleFileName;
+    public static String tempPath;
+    public static String finalPath;
+    private static ConfigManager configManager;
+
 
 
     public static void main( String[] args ) {
@@ -20,6 +27,17 @@ public class Launcher {
         // TODO: Create proper Maven Build Process
         // TODO: Improve the performance of the web capability
 
+        String configPath;
+        if(args.length == 0)
+        {
+            configPath = "Config\\config.properties";
+        }
+        else{
+            configPath = args[0];
+        }
+
+        configManager = new ConfigManager(configPath);
+        System.setProperty("logfilename", logsPath);
         DOMConfigurator.configure(logPropertiesPath);
 
         log.info("Launcher Started");

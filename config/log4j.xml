@@ -19,7 +19,7 @@
         <param name="append" value="true" />
         <param name="maxFileSize" value="10MB" />
         <param name="maxBackupIndex" value="10" />
-        <param name="file" value="logs/MediaManager.log" />
+        <param name="File" value="${logfilename}.log" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern"
                    value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%15.15t] %30.30c %x- L%-4L: %m%n" />
