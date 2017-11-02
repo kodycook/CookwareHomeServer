@@ -81,25 +81,25 @@ public class FileTransferrerRunnable implements Runnable {
         boolean moveSuccess = false;
         try{
             if (mediaInfo.TYPE.equals(MediaType.MOVIE)) {
-                oldFullFileName = Launcher.tempPath + "\\" + mediaInfo.PATH;
+                oldFullFileName = Launcher.tempPath + "/" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
-                localDirectory = "\\Movies\\" + fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
+                localDirectory = "/Movies/" + fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
                 directoryTools.createNewDirectory(Launcher.finalPath + localDirectory);
-                mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
+                mediaInfo.PATH = localDirectory + "/" + mediaInfo.PATH;
                 newFullFileName = Launcher.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
             }
             else if (mediaInfo.TYPE.equals(MediaType.EPISODE)){
-                oldFullFileName = Launcher.tempPath + "\\" + mediaInfo.PATH;
+                oldFullFileName = Launcher.tempPath + "/" + mediaInfo.PATH;
                 sourceFile = new File(oldFullFileName);
 
-                localDirectory = "\\TV Shows\\" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItemWithMatchedId(mediaInfo.PARENTSHOWID));
+                localDirectory = "/TV Shows/" + fileNameTools.getFullFileNameFromMediaInfo(databaseManager.getMediaItemWithMatchedId(mediaInfo.PARENTSHOWID));
                 directoryTools.createNewDirectory(Launcher.finalPath + localDirectory);
-                localDirectory += String.format("\\Season %d",mediaInfo.getSeason());
+                localDirectory += String.format("/Season %d",mediaInfo.getSeason());
                 directoryTools.createNewDirectory(Launcher.finalPath + localDirectory);
-                mediaInfo.PATH = localDirectory + "\\" + mediaInfo.PATH;
+                mediaInfo.PATH = localDirectory + "/" + mediaInfo.PATH;
                 newFullFileName = Launcher.finalPath + mediaInfo.PATH;
 
                 destinationFile = new File(newFullFileName);
@@ -137,10 +137,10 @@ public class FileTransferrerRunnable implements Runnable {
         // WILL IS THE APPROACH I'VE TAKEN IN THIS METHOD POOR IMPLEMENTATION?
         String path = Launcher.tempPath;
         directoryTools.createNewDirectory(path);
-        File sourceFile = new File(path + "\\" + fileName);
+        File sourceFile = new File(path + "/" + fileName);
 
-        path += "\\Unidentified";
-        File destinationFile = new File(path + "\\" + fileName);
+        path += "/Unidentified";
+        File destinationFile = new File(path + "/" + fileName);
 
         if(destinationFile.exists()){
             log.warn(String.format("Unidentified File: %s already exists in the destination", fileName));

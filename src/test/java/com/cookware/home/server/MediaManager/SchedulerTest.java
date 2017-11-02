@@ -9,10 +9,15 @@ import java.io.File;
  */
 public class SchedulerTest extends TestCase {
     public void testIsDownloading() throws Exception {
-        String fileName = "C:\\Users\\maste\\Software\\IdeaProjects\\CookwareHomeServer\\Schedule.csv";
+        String fileName = "C:/Users/maste/Software/IdeaProjects/CookwareHomeServer/Schedule.csv";
         File file = new File(fileName);
         System.out.println(new Scheduler(fileName).isDownloading());
         file.delete();
+    }
+
+    public void testIsAutomatic() throws Exception{
+        String fileName = "C:/Users/maste/Software/IdeaProjects/CookwareHomeServer/Schedule.csv";
+        assert(new Scheduler(fileName).getScheduleState() == 2);
     }
 
     public void testSplit() throws Exception {

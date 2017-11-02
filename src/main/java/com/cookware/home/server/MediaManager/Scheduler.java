@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class Scheduler {
     private static final Logger log = Logger.getLogger(Scheduler.class);
     private final CsvManager csvManager = new CsvManager();
-    private final autoDownload downloading = autoDownload.MANUAL_ON;
+    private final autoDownload downloading = autoDownload.AUTOMATIC;
     private final int daysInAWeek = 7;
     private final int hoursInADay = 24;
     private final String schedulerFileName;

@@ -30,7 +30,7 @@ public class Launcher {
         String configPath;
         if(args.length == 0)
         {
-            configPath = "Config\\config.properties";
+            configPath = "Config/config.properties";
         }
         else{
             configPath = args[0];

@@ -22,7 +22,7 @@ public class DatabaseManager {
 
     public DatabaseManager(String mFilePath) {
         this.databasePath = mFilePath;
-        this.driverPath = "jdbc:sqlite:" + this.databasePath + "\\media.db";
+        this.driverPath = "jdbc:sqlite:" + this.databasePath + "/media.db";
     }
 
     public void initialise() {

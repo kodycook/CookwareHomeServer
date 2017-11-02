@@ -17,7 +17,7 @@ import java.util.*;
 public class WebAppRequestHandlerRunnable implements Runnable {
     private final Logger log = Logger.getLogger(WebAppRequestHandlerRunnable.class);
     private final WebAppScraper webAppScraper = new WebAppScraper();
-    private final String imageDirectory = "C:\\Users\\maste\\Software\\WebDev\\MediaManager\\covers";
+    private final String imageDirectory = "C:/Users/maste/Software/WebDev/MediaManager/covers";
     private final String imageLink = "http://images.primewire.ag/thumbs";
     private final int port;
 
@@ -116,7 +116,7 @@ public class WebAppRequestHandlerRunnable implements Runnable {
 
 
     public void sendLocalImage(HttpExchange he, String imageName){
-        String path = imageDirectory + "\\" + imageName;
+        String path = imageDirectory + "/" + imageName;
         File file = new File(path);
 
         try {
