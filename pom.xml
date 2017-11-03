@@ -73,21 +73,37 @@
           </configuration>
         </execution>
         <execution>
-        <id>copy-config-to-test</id>
-        <phase>install</phase>
-        <goals>
-          <goal>copy-resources</goal>
-        </goals>
-        <configuration>
-          <outputDirectory>${test.folder}/Media Manager/Config</outputDirectory>
-          <resources>
-            <resource>
-              <directory>Config</directory>
-              <filtering>true</filtering>
-            </resource>
-          </resources>
-        </configuration>
-      </execution>
+          <id>copy-config-to-test</id>
+          <phase>install</phase>
+          <goals>
+            <goal>copy-resources</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${test.folder}/Media Manager/config</outputDirectory>
+            <resources>
+              <resource>
+                <directory>Config</directory>
+                <filtering>true</filtering>
+              </resource>
+            </resources>
+          </configuration>
+        </execution>
+        <execution>
+          <id>copy-web-app-to-test</id>
+          <phase>install</phase>
+          <goals>
+            <goal>copy-resources</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${test.folder}/Media Manager/WebApp</outputDirectory>
+            <resources>
+              <resource>
+                <directory>src/main/html</directory>
+                <filtering>true</filtering>
+              </resource>
+            </resources>
+          </configuration>
+        </execution>
 
         <execution>
           <id>copy-jar-to-repo</id>
@@ -114,10 +130,26 @@
             <goal>copy-resources</goal>
           </goals>
           <configuration>
-            <outputDirectory>${package.folder}/Media Manager/Config</outputDirectory>
+            <outputDirectory>${package.folder}/Media Manager/config</outputDirectory>
             <resources>
               <resource>
                 <directory>Config</directory>
+                <filtering>true</filtering>
+              </resource>
+            </resources>
+          </configuration>
+        </execution>
+        <execution>
+          <id>copy-web-app-to-repo</id>
+          <phase>install</phase>
+          <goals>
+            <goal>copy-resources</goal>
+          </goals>
+          <configuration>
+            <outputDirectory>${package.folder}/Media Manager/WebApp</outputDirectory>
+            <resources>
+              <resource>
+                <directory>src/main/html</directory>
                 <filtering>true</filtering>
               </resource>
             </resources>
