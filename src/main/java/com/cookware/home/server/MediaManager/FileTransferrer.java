@@ -1,5 +1,7 @@
 package com.cookware.home.server.MediaManager;
 
+import com.cookware.home.server.MediaManager.DataTypes.Config;
+import com.cookware.home.server.MediaManager.Managers.DatabaseManager;
 import org.apache.log4j.Logger;
 
 /**
@@ -9,8 +11,8 @@ public class FileTransferrer {
         private final FileTransferrerRunnable fileTransferrerRunnable;
         private static final Logger log = Logger.getLogger(FileTransferrer.class);
 
-        public FileTransferrer(DatabaseManager databaseManager){
-            fileTransferrerRunnable = new FileTransferrerRunnable(databaseManager);
+        public FileTransferrer(DatabaseManager databaseManager, Config config){
+            fileTransferrerRunnable = new FileTransferrerRunnable(databaseManager, config);
         }
 
         public void start(){

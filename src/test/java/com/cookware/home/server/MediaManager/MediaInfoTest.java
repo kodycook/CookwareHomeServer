@@ -1,5 +1,6 @@
 package com.cookware.home.server.MediaManager;
 
+import com.cookware.home.server.MediaManager.DataTypes.MediaInfo;
 import junit.framework.TestCase;
 
 /**

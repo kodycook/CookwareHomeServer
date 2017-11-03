@@ -1,7 +1,9 @@
 package com.cookware.home.server.MediaManager;
 
+import com.cookware.home.server.MediaManager.DataTypes.MediaInfo;
+import com.cookware.home.server.MediaManager.DataTypes.MediaType;
+import com.cookware.home.server.MediaManager.Tools.FileNameTools;
 import junit.framework.TestCase;
-import org.apache.commons.io.FilenameUtils;
 
 import java.math.BigInteger;
 import java.time.LocalDate;

@@ -1,5 +1,9 @@
 package com.cookware.home.server.MediaManager;
 
+import com.cookware.home.server.MediaManager.DataTypes.Config;
+import com.cookware.home.server.MediaManager.Managers.ConfigManager;
+import com.cookware.home.server.MediaManager.Tools.DirectoryTools;
+import com.cookware.home.server.MediaManager.WebApp.WebAppRequestHandler;
 import org.apache.log4j.*;
 import org.apache.log4j.xml.DOMConfigurator;
 
@@ -9,23 +13,14 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Launcher {
     private static final Logger log = Logger.getLogger(Launcher.class);
-    public static String logPropertiesPath;
-    public static String logsPath;
-    public static String databasePath;
-    public static String scheduleFileName;
-    public static String tempPath;
-    public static String finalPath;
-    private static ConfigManager configManager;
-
 
 
     public static void main( String[] args ) {
         // TODO: Write Java Docs
         // TODO: Write Unit Tests
         // TODO: Remove all unused exports
-        // TODO: Add in  functionality to read in config from file
-        // TODO: Create proper Maven Build Process
         // TODO: Improve the performance of the web capability
+        // TODO: Redesign logging so that logs can be filtered efficently
 
         String configPath;
         if(args.length == 0)
@@ -36,13 +31,15 @@ public class Launcher {
             configPath = args[0];
         }
 
-        configManager = new ConfigManager(configPath);
-        System.setProperty("logfilename", logsPath);
-        DOMConfigurator.configure(logPropertiesPath);
+        Config config = (new ConfigManager(configPath)).getConfig();
+        System.setProperty("logfilename", config.logsPath);
+        DOMConfigurator.configure(config.logPropertiesPath);
+
+        instantiateDirectories();
 
         log.info("Launcher Started");
 
-        MediaManager mediaManager = new MediaManager();
+        MediaManager mediaManager = new MediaManager(config);
         ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
         WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler();
 //        ClientStub clientStub = new ClientStub();
@@ -51,5 +48,11 @@ public class Launcher {
         serverRequestHandler.start();
         webAppRequestHandler.start();
         mediaManager.start();
+    }
+    public static void instantiateDirectories(){
+        DirectoryTools directoryTools = new DirectoryTools();
+        directoryTools.createNewDirectory("Logs");
+        directoryTools.createNewDirectory("Data");
+        directoryTools.createNewDirectory("Media");
     }
 }

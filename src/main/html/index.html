@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaManager</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link href="application.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="blt">
+  <h6 class="blv">COOKWARE</h6>
+  <h2 class="blu">Media Manager</h2>
+</div>
+
+<div class="input-group input-group-lg" id="searchBar">
+  <input type="text" id="search" class="form-control" placeholder="Search for..." aria-describedby="sizing-addon1">
+  <span class="input-group-btn">
+    <button class="btn btn-default" onclick="doFunction();" type="button">Go!</button>
+  </span>
+</div>
+
+<div id="snackbar">Some text some message..</div>
+
+<div class="mediaBlock">
+  <div class="row" id="mediaPane"></div>
+</div>
+
+<div id="loader"></div>
+
+
+
+
+<!-- <div class="container">
+      <h2>Image</h2>
+      <p>The .img-rounded class adds rounded corners to an image (not available in IE8):</p>
+      <img src="http://192.168.1.5:9001/image/1821429_Testing_Life_2014.jpg" class="img-rounded" alt="Cinque Terre" width="150" height="225">
+</div> -->
+
+
+
+
+
+<script language=javascript>
+  // var baseUrl = "http://192.168.1.5"; // Bec's House
+  var baseUrl = "http://10.1.1.15"; // Home
+  // var baseUrl = "http://192.168.43.252"; // Hotspot
+  // var baseUrl = "http://10.1.1.2"; // Home Server
+
+  document.getElementById("search").addEventListener('keypress', function(e){
+    if (e.keyCode == 13) {
+      doFunction();
+    }
+  });
+
+
+  function showSnackbar(text) {
+    var x = document.getElementById("snackbar")
+    x.innerHTML = text;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+  }
+
+
+  function doFunction(){
+    var nameValue = document.getElementById("search").value;
+    var url = baseUrl + ":9001/echoGet";
+    var imageUrl = baseUrl + ":9001/image/"
+    var mediaPane = document.getElementById("mediaPane");
+    var loader = document.getElementById("loader");
+
+    loader.style.visibility = "visible";
+    mediaPane.innerHTML = "";
+    $.get( url, { search: nameValue} )
+    .done(function( data ) {
+      loader.style.visibility = "hidden";
+      if (!$.trim(data)){
+        showSnackbar("No results found");
+      }
+      else if (data==="ERROR"){
+        showSnackbar("Error");
+      }
+      else{
+        var obj = JSON.parse(data);
+        jQuery.each( obj, function( title, attributes ) {
+          var image = attributes.image;
+          var link = attributes.url;
+
+          var newDiv = document.createElement("div");
+          newDiv.className = "darkBG col-sm-2 mediaBox";
+
+          var imageLinkContainer = document.createElement("a");
+          var newImage = document.createElement("img");
+          // imageLinkContainer.href = link;
+          newImage.onclick = function() { sendRequest(link);};
+          newImage.className = "cover";
+          newImage.src = imageUrl+image;
+          newImage.width ="150";
+          newImage.height = "225";
+          imageLinkContainer.appendChild(newImage);
+          newDiv.appendChild(imageLinkContainer);
+
+          var textLinkContainer = document.createElement("a");
+          var newTitle = document.createElement("p")
+          var titleNode = document.createTextNode(title);
+          // textLinkContainer.href = link;
+          newTitle.onclick = function() { sendRequest(link);};
+
+          newTitle.appendChild(titleNode);
+          textLinkContainer.appendChild(newTitle);
+          newDiv.appendChild(textLinkContainer);
+
+          mediaPane.appendChild(newDiv);
+        });
+      }
+    });
+  }
+
+
+  function sendRequest(link){
+    var loader = document.getElementById("loader");
+    loader.style.visibility = "visible";
+    $.post( baseUrl + ":9000/echoPost", { url: link} )
+      .done(function( data ) {
+      loader.style.visibility = "hidden";if (!$.trim(data)){
+        showSnackbar("Cannot access requested media - please try again later");
+      }
+      else{
+        showSnackbar(data);
+      }
+    });
+  }
+
+
+</script>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+</body>
+</html>

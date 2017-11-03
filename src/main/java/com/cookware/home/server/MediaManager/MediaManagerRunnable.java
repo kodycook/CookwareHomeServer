@@ -1,5 +1,15 @@
 package com.cookware.home.server.MediaManager;
 
+import com.cookware.home.server.MediaManager.DataTypes.Config;
+import com.cookware.home.server.MediaManager.DataTypes.DownloadState;
+import com.cookware.home.server.MediaManager.DataTypes.MediaInfo;
+import com.cookware.home.server.MediaManager.DataTypes.MediaType;
+import com.cookware.home.server.MediaManager.Managers.DatabaseManager;
+import com.cookware.home.server.MediaManager.Managers.DownloadManager;
+import com.cookware.home.server.MediaManager.Managers.ScheduleManager;
+import com.cookware.home.server.MediaManager.Tools.DirectoryTools;
+import com.cookware.home.server.MediaManager.Tools.FileNameTools;
+import com.cookware.home.server.MediaManager.Tools.WebTools;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,13 +31,20 @@ public class MediaManagerRunnable implements Runnable{
     // TODO: Sort out syncronised access to variables
     private final DirectoryTools directoryTools = new DirectoryTools();
     private final FileNameTools fileNameTools = new FileNameTools();
-    // TODO: Load in this config as one of the arguments to main
-    private final DatabaseManager databaseManager = new DatabaseManager(Launcher.databasePath);
-    private final FileTransferrer fileTransferrer = new FileTransferrer(databaseManager);
-    private final DownloadManager downloadManager = new DownloadManager(databaseManager);
-    private final Scheduler scheduler = new Scheduler(Launcher.scheduleFileName);
+    private final Config config;
+    private final DatabaseManager databaseManager;
+    private final FileTransferrer fileTransferrer;
+    private final DownloadManager downloadManager;
+    private final ScheduleManager scheduleManager;
 
-    public MediaManagerRunnable(){
+    public MediaManagerRunnable(Config mConfig){
+        config = mConfig;
+        // WILL: What is the difference for using the "this.blah" as oppose to "this"
+        this.databaseManager = new DatabaseManager(config.databasePath);
+        fileTransferrer = new FileTransferrer(databaseManager, config);
+        downloadManager = new DownloadManager(databaseManager, config);
+        scheduleManager = new ScheduleManager(config);
+
         databaseManager.initialise();
     }
 
@@ -46,14 +63,15 @@ public class MediaManagerRunnable implements Runnable{
         fileTransferrer.start();
 
         while(true){
+            // TODO: Find a way to stop resetting firstLoop if the media queue is empty
             firstLoop = true;
-            while (scheduler.isDownloading()){
+            while (scheduleManager.isDownloading()){
                 mediaQueue.clear();
                 if(firstLoop){
                     resetFailedDownloadMediaItems();
                     retrieveQueuedMediaFromDatabase(mediaQueue);
                     log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
-                    if (!directoryTools.checkIfNetworkLocationAvailable(Launcher.finalPath)){
+                    if (!directoryTools.checkIfNetworkLocationAvailable(config.finalPath)){
                         log.warn("Media Storage not available");
                     }
                     else {
