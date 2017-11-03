@@ -12,7 +12,7 @@ import java.io.File;
 public class ScheduleManagerTest extends TestCase {
     public void testIsDownloading() throws Exception {
         Config config = new Config();
-        config.scheduleFileName = "C:/Users/maste/Software/IdeaProjects/CookwareHomeServer/Schedule.csv";
+        config.scheduleFileName = "C:/Users/maste/Software/MediaManager/Schedule.csv";
         config.schedulerState = "ON";
         File file = new File(config.scheduleFileName);
         System.out.println(new ScheduleManager(config).isDownloading());
@@ -21,7 +21,7 @@ public class ScheduleManagerTest extends TestCase {
 
     public void testIsAutomatic() throws Exception{
         Config config = new Config();
-        config.scheduleFileName = "C:/Users/maste/Software/IdeaProjects/CookwareHomeServer/Schedule.csv";
+        config.scheduleFileName = "C:/Users/maste/Software/MediaManager/Schedule.csv";
         config.schedulerState = "AUTO";
         assert(new ScheduleManager(config).getScheduleState() == 2);
     }

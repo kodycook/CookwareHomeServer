@@ -75,9 +75,6 @@ fabric.properties
 # Log file
 *.log
 
-# Config Files
-*.csv
-
 # Database files
 *.db
 

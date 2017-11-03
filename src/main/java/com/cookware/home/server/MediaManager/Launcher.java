@@ -21,11 +21,12 @@ public class Launcher {
         // TODO: Remove all unused exports
         // TODO: Improve the performance of the web capability
         // TODO: Redesign logging so that logs can be filtered efficently
+        // TODO: Change error logs which really should be "warning"
 
         String configPath;
         if(args.length == 0)
         {
-            configPath = "Config/config.properties";
+            configPath = "config/config.properties";
         }
         else{
             configPath = args[0];
@@ -51,8 +52,8 @@ public class Launcher {
     }
     public static void instantiateDirectories(){
         DirectoryTools directoryTools = new DirectoryTools();
-        directoryTools.createNewDirectory("Logs");
-        directoryTools.createNewDirectory("Data");
-        directoryTools.createNewDirectory("Media");
+        directoryTools.createNewDirectory("logs");
+        directoryTools.createNewDirectory("data");
+        directoryTools.createNewDirectory("media");
     }
 }
