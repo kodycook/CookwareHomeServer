@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MediaManager</title>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link href="application.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="application.css">
 </head>
 <body>
 
@@ -30,6 +33,73 @@
 <div id="loader"></div>
 
 
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div class="modal-header row">
+      <h3 class="col-xs-10 align-middle">Modal Header</h3>
+      <div class="close col-xs-2">&times;</div>
+    </div>
+    <div class="modal-body row">
+      <div class="col-lg-2 col-sm-3 col-xs-12">
+        <img id="modal-img" width="150" height="225">
+      </div>
+      <div class="col-lg-5 col-sm-5 col-xs-12">
+        <div class="container">
+          <h3>Quality</h3>
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-default active" onclick="changeQuality(240)">
+                  <input type="radio" name="quality" onclick="doFunction();" value="240" checked="">240
+              </label>
+              <label class="btn btn-default" onclick="changeQuality(360)">
+                  <input type="radio" name="quality" value="360">360
+              </label>
+              <label class="btn btn-default" onclick="changeQuality(480)">
+                  <input type="radio" name="quality" value="480">480
+              </label>
+              <label class="btn btn-default" onclick="changeQuality(720)">
+                  <input type="radio" name="quality" value="720">720
+              </label>
+              <label class="btn btn-default" onclick="changeQuality(1080)">
+                  <input type="radio" name="quality" value="1080">1080
+              </label>
+          </div>
+        </div>
+
+        <div class="container">
+          <h3>Priority</h3>
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-default" onclick="changePriority(0)">
+                  <input type="radio" name="priority" value="0">Immediate
+              </label>
+              <label class="btn btn-default" onclick="changePriority(1)">
+                  <input type="radio" name="priority" value="1">Very High
+              </label>
+              <label class="btn btn-default" onclick="changePriority(2)">
+                  <input type="radio" name="priority" value="2">High
+              </label>
+              <label class="btn btn-default active" onclick="changePriority(3)">
+                  <input type="radio" name="priority" value="3"checked="">Medium
+              </label>
+              <label class="btn btn-default" onclick="changePriority(4)">
+                  <input type="radio" name="priority" value="4">Low
+              </label>
+              <label class="btn btn-default" onclick="changePriority(5)">
+                  <input type="radio" name="priority" value="5">Very Low
+              </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger btn-lg" id="download-button">Download</button>
+    </div>
+  </div>
+
+</div>
 
 
 <!-- <div class="container">
@@ -48,6 +118,20 @@
 
   // Use the last IP in the config as the server ip
   var baseUrl = config[config.length-1];
+  var imageUrl = baseUrl + ":9001/image/"
+  var requestUrl = baseUrl + ":9001/echoGet";
+
+
+  var loader = document.getElementById("loader");
+  var snackbar = document.getElementById("snackbar")
+  var mediaPane = document.getElementById("mediaPane");
+  var loader = document.getElementById("loader");
+  var modal = document.getElementById('myModal');
+
+  var span = document.getElementsByClassName("close")[0];
+
+  var currentQuality = 0;
+  var currentPriority = 3;
 
   document.getElementById("search").addEventListener('keypress', function(e){
     if (e.keyCode == 13) {
@@ -56,19 +140,24 @@
   });
 
 
+  function changeQuality(newQuality){
+    currentQuality = newQuality;
+  }
+
+
+  function changePriority(newPriority){
+    currentPriority = newPriority;
+  }
+
+
   function showSnackbar(text) {
-    var x = document.getElementById("snackbar")
-    x.innerHTML = text;
-    x.className = "show";
-    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+    snackbar.innerHTML = text;
+    snackbar.className = "show";
+    setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
   }
 
 
   function fillMediaRequests(data) {
-    var imageUrl = baseUrl + ":9001/image/"
-    var mediaPane = document.getElementById("mediaPane");
-    var loader = document.getElementById("loader");
-
     loader.style.visibility = "hidden";
     if (!$.trim(data)){
       showSnackbar("No results found");
@@ -83,12 +172,12 @@
         var link = attributes.url;
 
         var newDiv = document.createElement("div");
-        newDiv.className = "darkBG col-sm-2 mediaBox";
+        newDiv.className = "col-lg-2 col-sm-3 col-xs-4 mediaBox";
 
         var imageLinkContainer = document.createElement("a");
         var newImage = document.createElement("img");
 
-        newImage.onclick = function() { sendRequest(link);};
+        newImage.onclick = function() { showModal(title, link, newImage.src);};
         newImage.className = "cover";
         newImage.src = imageUrl+image;
         newImage.width ="150";
@@ -101,7 +190,8 @@
         var newTitle = document.createElement("p")
         var titleNode = document.createTextNode(title);
 
-        newTitle.onclick = function() { sendRequest(link);};
+        newTitle.className = "mediaTitle";
+        newTitle.onclick = function() { showModal(title, link, newImage.src);};
 
         newTitle.appendChild(titleNode);
         textLinkContainer.appendChild(newTitle);
@@ -114,9 +204,6 @@
 
 
   function doFunction(){
-    var loader = document.getElementById("loader");
-    var mediaPane = document.getElementById("mediaPane");
-    var requestUrl = baseUrl + ":9001/echoGet";
     var nameValue = document.getElementById("search").value;
 
     loader.style.visibility = "visible";
@@ -136,16 +223,13 @@
   }
 
 
-
-
-
   function sendRequest(link){
-    var loader = document.getElementById("loader");
     loader.style.visibility = "visible";
+    hideModal();
     $.ajax({
       type: "POST",
       url: baseUrl + ":9000/echoPost",
-      data: { url: link} ,
+      data: { url: link, quality: currentQuality, priority:currentPriority } ,
       success: function( data ) {
         loader.style.visibility = "hidden";
         if (!$.trim(data)){
@@ -163,9 +247,39 @@
   }
 
 
+
+
+
+  // When the user clicks the button, open the modal
+  function showModal(title, link, imageLink) {
+
+    document.getElementsByClassName("modal-header")[0].children[0].innerHTML = title;
+    document.getElementById("modal-img").src = imageLink;
+    document.getElementById("download-button").onclick = function() { sendRequest(link);};;
+    modal.style.display = "block";
+  }
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    hideModal();
+  }
+
+  function hideModal(){
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+      if (event.target == modal) {
+          modal.style.display = "none";
+      }
+  }
+
+
+
+
+
 </script>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
 </body>
 </html>

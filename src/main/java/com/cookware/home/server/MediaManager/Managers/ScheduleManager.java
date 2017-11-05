@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
  * Created by Kody on 12/10/2017.
  */
 public class ScheduleManager {
+    // TODO: Modify scheduler so that config can be modified on the go
     private static final Logger log = Logger.getLogger(ScheduleManager.class);
     private final Config config;
     private final CsvTools csvTools = new CsvTools();
