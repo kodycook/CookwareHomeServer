@@ -54,7 +54,7 @@ public class DirectoryTools {
             return true;
         }
         try{
-            log.info(String.format("Created new Directory: %s",directoryName));
+            log.debug(String.format("Created new Directory: %s",directoryName));
             new File(directoryName).mkdir();
             return true;
         }

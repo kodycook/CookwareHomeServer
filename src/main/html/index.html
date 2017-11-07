@@ -111,13 +111,11 @@
 
 
 
-<script src="resource/config.js"></script>
-
 <script language=javascript>
 // TODO: Add in test for server and timeouts on all requests
 
   // Use the last IP in the config as the server ip
-  var baseUrl = config[config.length-1];
+  var baseUrl = window.location.href.slice(0, -1);
   var imageUrl = baseUrl + ":9001/image/"
   var requestUrl = baseUrl + ":9001/echoGet";
 

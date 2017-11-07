@@ -41,7 +41,6 @@ public class DownloadManager {
     private final WebTools webTools = new WebTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     private final DatabaseManager databaseManager;
-    private String fileType;
 
     public DownloadManager(DatabaseManager mDatabaseManager, Config mConfig){
         config = mConfig;
@@ -66,7 +65,7 @@ public class DownloadManager {
         mediaInfo.QUALITY = embeddedMediaUrlAndQuality.quality;
         mediaInfo.PATH = fileNameTools.getFullFileNameFromMediaInfo(mediaInfo);
 
-        mediaInfo.PATH += fileType;
+        mediaInfo.PATH += embeddedMediaUrlAndQuality.fileType;
 
         databaseManager.updatePath(mediaInfo.ID, (mediaInfo.PATH));
         databaseManager.updateQuality(mediaInfo.ID, mediaInfo.QUALITY);
@@ -86,11 +85,11 @@ public class DownloadManager {
         return mediaInfo;
     }
 
-    private DownloadLink bridgeToVideoMe(MediaInfo mediaInfo){
+    protected DownloadLink bridgeToVideoMe(MediaInfo mediaInfo){
         final String html = webTools.getWebPageHtml(mediaInfo.URL);
         if(html.equals("")){
             log.error(String.format("Unknown issue obtaining html for %s", mediaInfo.URL));
-            return new DownloadLink("", 0);
+            return new DownloadLink("", 0, "");
         }
         final String urlExtension = findVideoMeLinkInHtml(html);
         if (urlExtension == null){
@@ -113,7 +112,7 @@ public class DownloadManager {
         }
         else if(mediaDownloadLinks.isEmpty()){
             log.error(String.format("Could not find media URLS at %s", redirectedUrl));
-            return new DownloadLink("", 0);
+            return new DownloadLink("", 0, "");
         }
 
         return selectBestLinkByQuality(mediaDownloadLinks, mediaInfo.QUALITY);
@@ -205,17 +204,23 @@ public class DownloadManager {
         scan.useDelimiter(Pattern.compile("}]"));
         logicalLine = scan.next();
         String[] rawMediaSources = logicalLine.split("\\},\\{");
+        String fileType;
 
         List<DownloadLink> mediaLinks = new ArrayList<DownloadLink>();
         for (String source:rawMediaSources){
             String[] rawSeperatedValues = source.split("\"");
             try{
                 String downloadUrl = rawSeperatedValues[3];
-                // TODO: Find another method other than a global to transfer the fileType
                 fileType = downloadUrl.substring(downloadUrl.length()-4);
 
-                int quality = Integer.parseInt(rawSeperatedValues[7].replaceAll("[^0-9]", ""));
-                mediaLinks.add(new DownloadLink(downloadUrl + "?direct=false&ua=1&vt=" + encodedHash, quality));
+                if (!(fileType.charAt(0) == '.')) {
+                    continue;
+                }
+                else {
+                    int quality = Integer.parseInt(rawSeperatedValues[7].replaceAll("[^0-9]", ""));
+                    mediaLinks.add(new DownloadLink(downloadUrl + "?direct=false&ua=1&vt=" + encodedHash, quality, fileType));
+                }
+
             } catch (Exception e){
                 log.error("Seperation of download links failed");
             }
@@ -226,6 +231,9 @@ public class DownloadManager {
 
 
     private DownloadLink selectBestLinkByQuality(List<DownloadLink> mediaLinks, int quality){
+        if (mediaLinks.isEmpty()){
+            return null;
+        }
         if(quality == -1){
             return selectLinkWithHighestQuality(mediaLinks);
         }
@@ -233,7 +241,7 @@ public class DownloadManager {
             return selectLinkWithLowestQuality(mediaLinks);
         }
         else{
-            return slectLinkClosestToSpecifiedQuality(mediaLinks, quality);
+            return selectLinkClosestToSpecifiedQuality(mediaLinks, quality);
         }
     }
 
@@ -264,7 +272,7 @@ public class DownloadManager {
     }
 
 
-    private DownloadLink slectLinkClosestToSpecifiedQuality(List<DownloadLink> mediaLinks, int specifiedQuality){
+    private DownloadLink selectLinkClosestToSpecifiedQuality(List<DownloadLink> mediaLinks, int specifiedQuality){
         int finalQualityDifference = Integer.MAX_VALUE;
         int currentQualityDifference;
         DownloadLink result = null;
@@ -371,14 +379,16 @@ public class DownloadManager {
     public class DownloadLink{
         public String url;
         public int quality;
+        public String fileType;
 
-        private DownloadLink(String mUrl, int mQuality){
+        private DownloadLink(String mUrl, int mQuality, String mFileType){
             this.url = mUrl;
             this.quality = mQuality;
+            this.fileType = mFileType;
         }
 
         public String toString(){
-            return String.format("(%dp) %s",this.quality, this.url);
+            return String.format("(%dp) [%s] %s",this.quality, this.fileType.substring(1), this.url);
         }
     }
 }

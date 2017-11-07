@@ -82,7 +82,7 @@ public class DatabaseManager {
 
 
     public void updatePriority(BigInteger mediaId, int priority){
-        updateDatabaseValue(mediaId, "QUALITY", priority);
+        updateDatabaseValue(mediaId, "PRIORITY", priority);
     }
 
 
