@@ -19,7 +19,6 @@ public class ConfigManagerTest extends TestCase {
         try{
             assert(config.finalPath.equals("/media/Public/Media"));
             assert(config.schedulerState.equals("AUTO"));
-            assert(config.webAppPath.equals("WebApp"));
         }catch(AssertionError e) {
             System.out.println("\nNeed to prepare config for deployment");
 

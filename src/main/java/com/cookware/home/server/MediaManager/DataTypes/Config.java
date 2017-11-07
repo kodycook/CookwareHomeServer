@@ -11,5 +11,4 @@ public class Config {
     public String tempPath;
     public String finalPath;
     public String schedulerState;
-    public String webAppPath;
 }
