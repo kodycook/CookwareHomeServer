@@ -156,37 +156,61 @@ public class DownloadManager {
         // TODO: Clean up this function
         Scanner scan;
         String logicalLine;
-        String firstPage = webTools.getWebPageHtml(url);
+        String firstPage;
+        String secondPage;
+
+        firstPage = webTools.getWebPageHtml(url);
         if(firstPage.equals("")){
             return new ArrayList<>();
         }
         Document document = Jsoup.parse(firstPage);
         if(document.getElementsByAttributeValue("name", "hash").size() == 0){
-            log.error(String.format("Error retrieving hash code from %s",url));
-            return null;
+            int startOfLinksInFirstWebPage = firstPage.indexOf("sources: [");
+            if (startOfLinksInFirstWebPage == -1){
+                log.error(String.format("Error retrieving hash code from %s",url));
+                return null;
+            }
+            else secondPage = firstPage;
+            log.info("No \"Proceed to video\" page for this media");
         }
-        String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
+        else {
+            String hash = document.getElementsByAttributeValue("name", "hash").get(0).attr("value");
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("_vhash", "i1102394cE"));
-        params.add(new BasicNameValuePair("gfk", "i22abd2449"));
-        params.add(new BasicNameValuePair("hash", hash));
-        params.add(new BasicNameValuePair("inhu", "foff"));
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("_vhash", "i1102394cE"));
+            params.add(new BasicNameValuePair("gfk", "i22abd2449"));
+            params.add(new BasicNameValuePair("hash", hash));
+            params.add(new BasicNameValuePair("inhu", "foff"));
 
-        String secondPage = webTools.getWebPageHtml(url, WebTools.HttpRequestType.POST, params);
+            secondPage = webTools.getWebPageHtml(url, WebTools.HttpRequestType.POST, params);
+        }
+
         if(secondPage.equals("")){
             return new ArrayList<>();
         }
 
-        int startOfUrlCodeInWebPage = secondPage.indexOf("lets_play_a_game='");
+        String encodedHash = getHashFromMediaPage(secondPage);
+        if (encodedHash.equals("")){
+            return new ArrayList<>();
+        }
 
-        scan = new Scanner(secondPage.substring(startOfUrlCodeInWebPage+"lets_play_a_game='".length()));
+        return findMediaOnPage(secondPage, encodedHash);
+    }
+
+
+    private String getHashFromMediaPage(String pageHtml){
+        Scanner scan;
+        String logicalLine;
+
+        int startOfUrlCodeInWebPage = pageHtml.indexOf("lets_play_a_game='");
+
+        scan = new Scanner(pageHtml.substring(startOfUrlCodeInWebPage+"lets_play_a_game='".length()));
         scan.useDelimiter(Pattern.compile("'"));
         logicalLine = scan.next();
 
         String thirdPage = webTools.getWebPageHtml("https://thevideo.me/vsign/player/"+logicalLine);
         if(thirdPage.equals("")){
-            return new ArrayList<>();
+            return "";
         }
 
         String[] encodedAttributes = thirdPage.split("\\|");
@@ -198,9 +222,16 @@ public class DownloadManager {
                 break;
             }
         }
+        return encodedHash;
+    }
 
-        int startOfLinksInWebPage = secondPage.indexOf("sources: [");
-        scan = new Scanner(secondPage.substring(startOfLinksInWebPage+11));
+
+    private List<DownloadLink> findMediaOnPage(String pageHtml, String encodedHash){
+        Scanner scan;
+        String logicalLine;
+
+        int startOfLinksInWebPage = pageHtml.indexOf("sources: [");
+        scan = new Scanner(pageHtml.substring(startOfLinksInWebPage+11));
         scan.useDelimiter(Pattern.compile("}]"));
         logicalLine = scan.next();
         String[] rawMediaSources = logicalLine.split("\\},\\{");
@@ -225,10 +256,8 @@ public class DownloadManager {
                 log.error("Seperation of download links failed");
             }
         }
-
         return mediaLinks;
     }
-
 
     private DownloadLink selectBestLinkByQuality(List<DownloadLink> mediaLinks, int quality){
         if (mediaLinks.isEmpty()){

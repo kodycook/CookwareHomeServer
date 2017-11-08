@@ -208,9 +208,9 @@ public class WebAppRequestHandlerRunnable implements Runnable {
                     "\"image\":\"%s\"," +
                     "\"url\":\"%s\"" +
                     "},",
-                    mediaItem.name,
-                    mediaItem.coverImageUrl,
-                    mediaItem.url);
+                    mediaItem.name.replace("\"", "\\\""),
+                    mediaItem.coverImageUrl.replace("\"", "\\\""),
+                    mediaItem.url.replace("\"", "\\\""));
         }
         if(json.endsWith(","))
         {

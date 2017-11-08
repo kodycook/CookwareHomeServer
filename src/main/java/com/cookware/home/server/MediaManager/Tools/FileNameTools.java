@@ -44,7 +44,7 @@ public class FileNameTools {
 
 
     public BigInteger generateHashFromShortMediaName(String shortMediaName){
-        String shortMediaNameWithoutWhiteSpace = removeSpecialCharactersFromString(shortMediaName);
+        String shortMediaNameWithoutWhiteSpace = removeSpecialCharactersFromFileName(shortMediaName);
         return this.stringHasher.fnv1a_32(shortMediaNameWithoutWhiteSpace.getBytes());
     }
 
@@ -61,10 +61,14 @@ public class FileNameTools {
                     mediaInfo.NAME,
                     mediaInfo.RELEASED.getYear());
         }
-        return removeSpecialCharactersFromString(mediaFileName);
+        return removeSpecialCharactersFromFileName(mediaFileName);
     }
 
-    public String removeSpecialCharactersFromString(String inputString){
-        return inputString.replaceAll("[\\/:*?\"<>|]","");
+    public String removeSpecialCharactersFromFileName(String fileName){
+        return fileName.replaceAll("[\\/:*?\"<>|]","");
+    }
+
+    public String removeSpecialCharactersFromPath(String pathName){
+        return pathName.replaceAll("[:*?\"<>|]","");
     }
 }

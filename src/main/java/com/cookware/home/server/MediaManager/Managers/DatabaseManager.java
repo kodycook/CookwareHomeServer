@@ -71,7 +71,7 @@ public class DatabaseManager {
 
     public void updatePath(BigInteger mediaId, String path){
 
-        updateDatabaseValue(mediaId, "PATH", fileNameTools.removeSpecialCharactersFromString(path));
+        updateDatabaseValue(mediaId, "PATH", fileNameTools.removeSpecialCharactersFromPath(path));
     }
 
 
@@ -135,7 +135,7 @@ public class DatabaseManager {
             sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
                             "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %.2f, %d, '%s');",
                     info.ID,
-                    fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                    fileNameTools.removeSpecialCharactersFromFileName(info.NAME).replace("'", "''"),
                     info.TYPE.ordinal(),
                     info.URL,
                     info.QUALITY,
@@ -145,12 +145,12 @@ public class DatabaseManager {
                     java.sql.Date.valueOf(added),
                     info.EPISODE,
                     info.PARENTSHOWID,
-                    fileNameTools.removeSpecialCharactersFromString(info.PARENTSHOWNAME).replace("'", "''"));
+                    fileNameTools.removeSpecialCharactersFromFileName(info.PARENTSHOWNAME).replace("'", "''"));
         } else {
             sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED) " +
                             "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s');",
                     info.ID,
-                    fileNameTools.removeSpecialCharactersFromString(info.NAME).replace("'", "''"),
+                    fileNameTools.removeSpecialCharactersFromFileName(info.NAME).replace("'", "''"),
                     info.TYPE.ordinal(),
                     info.URL,
                     info.QUALITY,
