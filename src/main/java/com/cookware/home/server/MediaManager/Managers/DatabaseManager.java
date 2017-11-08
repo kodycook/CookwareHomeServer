@@ -124,7 +124,7 @@ public class DatabaseManager {
             if (clashedItem == null) {
                 log.error("UNKNOWN ERROR");
             }
-            log.warn(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
+            log.debug(String.format("Hash collision while trying to write to Database between:\n%s\nAND\n%s",
                     info.toString(),
                     clashedItem.toString()));
             return false;

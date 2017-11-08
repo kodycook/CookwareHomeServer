@@ -285,7 +285,7 @@ public class MediaManagerRunnable implements Runnable{
                 return false;
             }
             else if(info.TYPE.equals(MediaType.MOVIE)){
-                log.info(String.format("Movie already in database: %s", info.toString()));
+                log.warn(String.format("Movie already in database: %s", info.toString()));
                 return false;
             }
         }

@@ -60,7 +60,10 @@ public class ServerRequestHandlerRunnable implements Runnable {
                 quality = (String) parameters.get(key);
             }
         }
-        log.info(String.format("Received Media Request with attributes: URL: %s",url));
+        log.info(String.format("Received Media Request with attributes:\tPRIORITY: %s\tQUALITY: %s\tURL: %s",
+                priority,
+                quality,
+                url));
         return mediaManager.addNewMediaRequest(url, priority, quality);
     }
 
