@@ -30,6 +30,7 @@ public class MediaManagerRunnable implements Runnable{
     // TODO: Add in a Statistics Manager
     // TODO: Sort out syncronised access to variables
     private final DirectoryTools directoryTools = new DirectoryTools();
+    private final WebTools webTools = new WebTools();
     private final FileNameTools fileNameTools = new FileNameTools();
     private final Config config;
     private final DatabaseManager databaseManager;
@@ -67,10 +68,21 @@ public class MediaManagerRunnable implements Runnable{
             firstLoop = true;
             while (scheduleManager.isDownloading()){
                 mediaQueue.clear();
+
+                if(!webTools.checkInternetConnection()){
+                    break;
+                }
+
+                if(!webTools.checkVpnConnection()){
+                    break;
+                }
+
                 if(firstLoop){
                     resetFailedDownloadMediaItems();
                     retrieveQueuedMediaFromDatabase(mediaQueue);
-                    log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
+                    if(mediaQueue.size()!=0) {
+                        log.info(String.format("Retrieved %d pending downloads from Database", mediaQueue.size()));
+                    }
                     if (!directoryTools.checkIfNetworkLocationAvailable(config.finalPath)){
                         log.warn("Media Storage not available");
                     }
@@ -92,7 +104,6 @@ public class MediaManagerRunnable implements Runnable{
                 }
 
                 updateState(currentMedia, DownloadState.DOWNLOADING);
-                // TODO: Perform a check of the network here
                 downloadManager.downloadMedia(currentMedia);
             }
 
@@ -161,6 +172,14 @@ public class MediaManagerRunnable implements Runnable{
         final List<MediaInfo> episodes = retrieveEpisodesFromUrl(url);
         MediaInfo info = new MediaInfo();
 
+        if(!webTools.checkInternetConnection()){
+            return "Error - Internet not connected";
+        }
+
+        if(!webTools.checkVpnConnection()){
+            return "Error - VPN not connected";
+        }
+
         info.URL = url;
         info.QUALITY = qualityStringIntoInteger(qualityString);
         info.PRIORITY = priority;
@@ -196,7 +215,7 @@ public class MediaManagerRunnable implements Runnable{
         WebTools webTools = new WebTools();
         ArrayList<MediaInfo> episodeInfoList = new ArrayList<>();
         final String html = webTools.getWebPageHtml(url);
-        log.debug(String.format("HTML for Tv Show:\n%s",html));
+        log.debug(String.format("HTML for Primewire media page (%s):\n%s",url, html));
 
         final Document document = Jsoup.parse(html);
         final Elements tvSeasons = document.getElementsByClass("tv_container");

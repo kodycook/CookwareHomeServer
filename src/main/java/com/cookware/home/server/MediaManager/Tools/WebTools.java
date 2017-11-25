@@ -4,10 +4,7 @@ import org.apache.http.NameValuePair;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.List;
 
 /**
@@ -16,9 +13,6 @@ import java.util.List;
  */
 public class WebTools {
     private static final Logger log = Logger.getLogger(WebTools.class);
-
-    public WebTools(){
-    }
 
 
     public String extractBaseURl(String url){
@@ -174,6 +168,32 @@ public class WebTools {
 
             return null;
         }
+    }
+
+
+    public boolean checkInternetConnection(){
+        try {
+            final URL url = new URL("http://www.google.com");
+            final URLConnection conn = url.openConnection();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public boolean checkVpnConnection(){
+        URLConnection connection = null;
+        InputStream response = null;
+        try {
+            connection = new URL("http://www.primewire.ag").openConnection();
+            connection.setRequestProperty("Accept-Charset", "UTF-8");
+        } catch (IOException e) {
+            return false;
+        }
+        if(connection.getHeaderField(1).equals("nginx")){
+            return false;
+        }
+        return true;
     }
 
 

@@ -1,5 +1,6 @@
 package com.cookware.home.server.MediaManager.WebApp;
 
+import com.cookware.home.server.MediaManager.Tools.WebTools;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -8,17 +9,15 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.net.*;
+import java.util.*;
 
 /**
  * Created by Kody on 27/10/2017.
  */
 public class WebAppScraper {
     private static final Logger log = Logger.getLogger(WebAppScraper.class);
+    private final WebTools webTools = new WebTools();
     private final String baseUrl = "http://www.primewire.ag";
 
 
@@ -42,7 +41,16 @@ public class WebAppScraper {
         Scanner consoleScanner = new Scanner(System.in);
         final List<WebAppMediaItem> foundMedia = new ArrayList<>();
 
-        // TODO: Check internet connection
+        if(!webTools.checkInternetConnection()){
+            log.error("Web App server could not complete request - internet not connected");
+            return null;
+        }
+
+        if(!webTools.checkVpnConnection()){
+            log.error("Web App server could not complete request - VPN not connected");
+            return null;
+        }
+
         URLConnection connection = null;
         InputStream response = null;
         try {

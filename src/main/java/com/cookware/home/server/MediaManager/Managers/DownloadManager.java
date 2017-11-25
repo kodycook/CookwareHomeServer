@@ -102,6 +102,10 @@ public class DownloadManager {
         }
         final String videoMeUrl = webTools.extractBaseURl(mediaInfo.URL) + urlExtension;
         String redirectedUrl = webTools.getRedirectedUrl(videoMeUrl);
+        if(redirectedUrl == null) {
+            log.error(String.format("Timeout for redirect URL", videoMeUrl));
+            return new DownloadLink("", 0, "");
+        }
         if(redirectedUrl.equals("")) {
             log.error(String.format("Could not obtain redirect URL for %s", videoMeUrl));
             return null;
