@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.cookware.home.server</groupId>
   <artifactId>mediaMananger</artifactId>
-  <version>1.02-SNAPSHOT</version>
+  <version>1.03-SNAPSHOT</version>
   <name>Media Manager</name>
   <url>http://maven.apache.org</url>
 

@@ -59,6 +59,9 @@ public class FileTransferrerRunnable implements Runnable {
                             else if (currentMediaInfo.STATE.equals(DownloadState.IGNORED)){
                                 currentFile.delete();
                             }
+                            else if (currentMediaInfo.STATE.equals(DownloadState.FAILED)){
+                                currentFile.delete();
+                            }
                         }
                         else {
                             log.error(String.format("Could not match \"%s\" media file to entry in database - moved to \"unidentified\" folder",currentFileName));

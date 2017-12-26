@@ -50,6 +50,7 @@ public class DownloadManager {
     public MediaInfo downloadMedia(MediaInfo mediaInfo){
         log.info(String.format("Starting download: %s", mediaInfo.toString()));
         boolean downloadSuccess;
+        //TODO: Add Redirect to media download
         final DownloadLink embeddedMediaUrlAndQuality = bridgeToVideoMe(mediaInfo);
         if(embeddedMediaUrlAndQuality == null){
             log.error(String.format("This media item will need to be downloaded manually and has been set to the \"IGNORED\" state in the Database"));
@@ -107,7 +108,7 @@ public class DownloadManager {
             return new DownloadLink("", 0, "");
         }
         if(redirectedUrl.equals("")) {
-            log.error(String.format("Could not obtain redirect URL for %s", videoMeUrl));
+            log.error(String.format("Could not obtain redirect URL for %s (%s)", mediaInfo.NAME, videoMeUrl));
             return null;
         }
         List<DownloadLink> mediaDownloadLinks = extractAllMediaUrls(redirectedUrl);
@@ -115,7 +116,6 @@ public class DownloadManager {
             return null;
         }
         else if(mediaDownloadLinks.isEmpty()){
-            log.error(String.format("Could not find media URLS at %s", redirectedUrl));
             return new DownloadLink("", 0, "");
         }
 

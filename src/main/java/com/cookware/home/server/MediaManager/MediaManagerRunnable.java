@@ -60,6 +60,7 @@ public class MediaManagerRunnable implements Runnable{
         // TODO: Update TV Show object when all episodes are downloaded
         // TODO: Find a way to force download objects with a priority of 0
         // TODO: Check internet connectivity before attempting downloads
+        // TODO: BUG - Seems to be an issue where scheduler starting without a VPN causes an issue which isn't logged - it just stops the process
 
         fileTransferrer.start();
 
@@ -162,7 +163,6 @@ public class MediaManagerRunnable implements Runnable{
         if(tempMediaQueue.size()!=0) {
             for (MediaInfo queuedMedia : tempMediaQueue) {
                 mediaQueue.add(queuedMedia);
-                log.debug(queuedMedia.toString());
             }
         }
     }

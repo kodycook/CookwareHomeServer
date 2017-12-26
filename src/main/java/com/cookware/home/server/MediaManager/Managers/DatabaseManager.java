@@ -132,7 +132,7 @@ public class DatabaseManager {
 
         String sql;
         if (info.TYPE.equals(MediaType.EPISODE)) {
-            sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED, EPISODE, PARENTID, PARENTNAME) " +
+            sql = String.format("INSERT INTO MEDIA (ID,NAME,TYPE,URL,QUALITY,STATE,PRIORITY,RELEASED,ADDED,EPISODE,PARENTID,PARENTNAME) " +
                             "VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', '%s', %.2f, %d, '%s');",
                     info.ID,
                     fileNameTools.removeSpecialCharactersFromFileName(info.NAME).replace("'", "''"),

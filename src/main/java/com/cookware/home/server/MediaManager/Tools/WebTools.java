@@ -84,11 +84,11 @@ public class WebTools {
             }
         }
         catch(SocketTimeoutException e){
-            log.error("Connection timed out");
+            log.error(String.format("Connection timed out - %s", url), e);
             return "";
         }
         catch (IOException e) {
-            log.error("Issue accessing internet");
+            log.error(String.format("Issue accessing internet - %s", url), e);
             return "";
         }
         return html.toString();
