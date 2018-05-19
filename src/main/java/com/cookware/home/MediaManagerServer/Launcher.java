@@ -43,7 +43,7 @@ public class Launcher {
 
         MediaManager mediaManager = new MediaManager(config);
         ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
-        WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler();
+        WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler(config);
 //        ClientStub clientStub = new ClientStub();
 
 //        clientStub.start();

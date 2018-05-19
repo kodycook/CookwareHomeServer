@@ -20,8 +20,11 @@ body {
   z-index: 0;
 }
 
+.mediaSelector {
+  float: right;
+}
+
 .mediaBlock {
-  /*background-color:gray;*/
   padding: 20px;
 }
 
@@ -37,18 +40,35 @@ body {
 }
 
 .mediaBox {
-    word-wrap: normal;
-    padding: 5px;
-    text-align: center;
-    padding-bottom: 30px;
+  word-wrap: normal;
+  padding: 5px;
+  text-align: center;
+  padding-bottom: 30px;
+
+  /* position: relative;
+  width: 100%; */
+}
+
+.sizeRestraint {
+  max-width: 150px;
+}
+
+.coverContainer {
+  width: 100%;
+  padding-bottom: 150%;
+  background: #fff;
+  border: 1px solid #021a40;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
 }
 
 .cover {
-  text-align: center;
-  border:1px solid #021a40;
+  position: absolute;
+  height: 100%;
   width: 100%;
-  max-width: 150px;
-  height: auto;
+  overflow: hidden;
+  display: block;
 }
 
 a:hover {
@@ -67,6 +87,8 @@ a:hover {
     position:fixed;
     top:50%;
     right:50%;
+     margin-top: -60px;
+    margin-right: -60px;
     width: 120px;
     height: 120px;
     background-repeat:no-repeat;
@@ -177,7 +199,9 @@ a:hover {
     color: white;
 }
 
-.modal-content .modal-body {padding: 2px 16px;}
+.modal-content .modal-body {
+  padding: 2px 16px;
+}
 
 .modal-content .modal-footer {
     padding: 2px 16px;
@@ -207,6 +231,8 @@ a:hover {
 }
 
 #modal-img {
+  background: #fff;
+  border:1px solid #021a40;
   display: block;
   width: 100%;
   max-width: 125px;

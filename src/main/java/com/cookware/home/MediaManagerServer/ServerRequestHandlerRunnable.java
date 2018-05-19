@@ -64,6 +64,8 @@ public class ServerRequestHandlerRunnable implements Runnable {
                 priority,
                 quality,
                 url));
+
+        // TODO: Add failed media adds to a text file for logging
         return mediaManager.addNewMediaRequest(url, priority, quality);
     }
 

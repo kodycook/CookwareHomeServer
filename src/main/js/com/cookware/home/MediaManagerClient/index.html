@@ -14,13 +14,18 @@
 
 <div class="blt">
   <h6 class="blv">COOKWARE</h6>
-  <h2 class="blu">Media Manager</h2>
+  <h2 class="blu">Media Manager
+    <select class="bootstrap-select btn btn-default dropdown-toggle mediaSelector" onchange="changeMedia(this.value)">
+      <option value="movies" selected="selected">Movies</option>
+      <option value="tv">TV</option>
+    </select>
+  </h2>
 </div>
 
 <div class="input-group input-group-lg" id="searchBar">
   <input type="text" id="search" class="form-control" placeholder="Search for..." aria-describedby="sizing-addon1">
   <span class="input-group-btn">
-    <button class="btn btn-default" onclick="doFunction();" type="button">Go!</button>
+    <button class="btn btn-default" onclick="doFunction();" type="button">Go</button>
   </span>
 </div>
 
@@ -51,7 +56,7 @@
           <h3>Quality</h3>
             <div class="btn-group" data-toggle="buttons">
               <label class="btn btn-default active" onclick="changeQuality(240)">
-                  <input type="radio" name="quality" onclick="doFunction();" value="240" checked="">240
+                  <input type="radio" name="quality" value="240" checked="">240
               </label>
               <label class="btn btn-default" onclick="changeQuality(360)">
                   <input type="radio" name="quality" value="360">360
@@ -91,22 +96,13 @@
               </label>
           </div>
         </div>
-
       </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-danger btn-lg" id="download-button">Download</button>
     </div>
   </div>
-
 </div>
-
-
-<!-- <div class="container">
-      <h2>Image</h2>
-      <p>The .img-rounded class adds rounded corners to an image (not available in IE8):</p>
-      <img src="http://192.168.1.5:9001/image/1821429_Testing_Life_2014.jpg" class="img-rounded" alt="Cinque Terre" width="150" height="225">
-</div> -->
 
 
 
@@ -119,6 +115,8 @@
   var imageUrl = baseUrl + ":9001/image/"
   var requestUrl = baseUrl + ":9001/echoGet";
 
+  var useVpn = false;
+
 
   var loader = document.getElementById("loader");
   var snackbar = document.getElementById("snackbar")
@@ -128,6 +126,7 @@
 
   var span = document.getElementsByClassName("close")[0];
 
+  var currentMedia = 'movies';
   var currentQuality = 0;
   var currentPriority = 3;
 
@@ -137,6 +136,9 @@
     }
   });
 
+  function changeMedia(newMedia) {
+    currentMedia = newMedia;
+  }
 
   function changeQuality(newQuality){
     currentQuality = newQuality;
@@ -169,17 +171,25 @@
         var image = attributes.image;
         var link = attributes.url;
 
+        var mediaContainer = document.createElement("div");
+        mediaContainer.className = "col-lg-2 col-sm-3 col-xs-4 mediaBox";
+
         var newDiv = document.createElement("div");
-        newDiv.className = "col-lg-2 col-sm-3 col-xs-4 mediaBox";
+        newDiv.className = "sizeRestraint";
 
         var imageLinkContainer = document.createElement("a");
+        imageLinkContainer.className = "coverContainer"
+
         var newImage = document.createElement("img");
 
         newImage.onclick = function() { showModal(title, link, newImage.src);};
         newImage.className = "cover";
-        newImage.src = imageUrl+image;
-        newImage.width ="150";
-        newImage.height = "225";
+        if(useVpn == true) {
+          newImage.src = imageUrl+image;
+        }
+        else {
+          newImage.src = image;
+        }
         imageLinkContainer.appendChild(newImage);
         newDiv.appendChild(imageLinkContainer);
 
@@ -195,7 +205,8 @@
         textLinkContainer.appendChild(newTitle);
         newDiv.appendChild(textLinkContainer);
 
-        mediaPane.appendChild(newDiv);
+        mediaContainer.appendChild(newDiv)
+        mediaPane.appendChild(mediaContainer);
       });
     }
   }
@@ -209,7 +220,7 @@
     $.ajax({
       type: "GET",
       url: requestUrl,
-      data: { search: nameValue},
+      data: { search: nameValue, type: currentMedia },
       success: function(data) {
         fillMediaRequests(data);
       },
