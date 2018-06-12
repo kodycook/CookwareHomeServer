@@ -31,7 +31,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.cookware.home.server.MediaManager.Launcher</mainClass>
+              <mainClass>com.cookware.home.MediaManagerServer.Launcher</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
