@@ -1,7 +1,7 @@
 package com.cookware.home.MediaManagerServer.WebApp;
 
 import org.apache.log4j.Logger;
-import com.cookware.home.server.MediaManager.DataTypes.Config;
+import com.cookware.home.MediaManagerServer.DataTypes.Config;
 
 /**
  * Created by Kody on 5/09/2017.

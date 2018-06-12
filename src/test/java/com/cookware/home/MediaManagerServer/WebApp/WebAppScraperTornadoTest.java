@@ -1,16 +1,7 @@
-package com.cookware.home.server.MediaManager.WebApp;
+package com.cookware.home.MediaManagerServer.WebApp;
 
-import com.cookware.home.server.MediaManager.DataTypes.Config;
-import com.cookware.home.server.MediaManager.DataTypes.MediaType;
-import com.cookware.home.server.MediaManager.Managers.ConfigManager;
 import junit.framework.TestCase;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.junit.BeforeClass;
-
-import java.net.MalformedURLException;
 
 /**
  * Created by Kody on 12/05/2018.

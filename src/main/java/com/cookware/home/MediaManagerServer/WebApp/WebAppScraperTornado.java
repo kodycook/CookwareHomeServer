@@ -1,17 +1,12 @@
-package com.cookware.home.server.MediaManager.WebApp;
+package com.cookware.home.MediaManagerServer.WebApp;
 
-import com.cookware.home.server.MediaManager.DataTypes.MediaType;
-import com.cookware.home.server.MediaManager.Tools.WebTools;
+import com.cookware.home.MediaManagerServer.Tools.WebTools;
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
