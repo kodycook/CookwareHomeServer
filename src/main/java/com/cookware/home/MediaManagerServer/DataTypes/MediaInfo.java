@@ -12,6 +12,7 @@ public class MediaInfo {
     private static final Logger log = Logger.getLogger(MediaInfo.class);
     private final boolean printLong = false;
     public BigInteger ID = new BigInteger("0");
+    public String IMDB = "";
     public String URL = "";
     public String NAME = "";
     public MediaType TYPE = null;
