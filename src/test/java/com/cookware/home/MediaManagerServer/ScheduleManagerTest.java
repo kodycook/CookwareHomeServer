@@ -11,19 +11,19 @@ import java.io.File;
  */
 public class ScheduleManagerTest extends TestCase {
     public void testIsDownloading() throws Exception {
-        Config config = new Config();
-        config.scheduleFileName = "C:/Users/maste/Software/MediaManagerServer/Schedule.csv";
-        config.schedulerState = "ON";
-        File file = new File(config.scheduleFileName);
-        System.out.println(new ScheduleManager(config).isDownloading());
-        file.delete();
+//        Config config = new Config();
+//        config.scheduleFileName = "C:/Users/maste/Software/MediaManagerServer/Schedule.csv";
+//        config.schedulerState = "ON";
+//        File file = new File(config.scheduleFileName);
+//        System.out.println(new ScheduleManager(config).isDownloading());
+//        file.delete();
     }
 
     public void testIsAutomatic() throws Exception{
-        Config config = new Config();
-        config.scheduleFileName = "C:/Users/maste/Software/MediaManagerServer/Schedule.csv";
-        config.schedulerState = "AUTO";
-        assert(new ScheduleManager(config).getScheduleState() == 2);
+//        Config config = new Config();
+//        config.scheduleFileName = "C:/Users/maste/Software/MediaManagerServer/Schedule.csv";
+//        config.schedulerState = "AUTO";
+//        assert(new ScheduleManager(config).getScheduleState() == 2);
     }
 
     public void testSplit() throws Exception {

@@ -3,7 +3,6 @@ package com.cookware.home.MediaManagerServer;
 import com.cookware.home.MediaManagerServer.DataTypes.Config;
 import com.cookware.home.MediaManagerServer.Managers.ConfigManager;
 import com.cookware.home.MediaManagerServer.Tools.DirectoryTools;
-import com.cookware.home.MediaManagerServer.WebApp.WebAppRequestHandler;
 import org.apache.log4j.*;
 import org.apache.log4j.xml.DOMConfigurator;
 
@@ -43,12 +42,10 @@ public class Launcher {
 
         MediaManager mediaManager = new MediaManager(config);
         ServerRequestHandler serverRequestHandler = new ServerRequestHandler(mediaManager);
-        WebAppRequestHandler webAppRequestHandler = new WebAppRequestHandler(config);
 //        ClientStub clientStub = new ClientStub();
 
 //        clientStub.start();
         serverRequestHandler.start();
-        webAppRequestHandler.start();
         mediaManager.start();
     }
 

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CookwareHomeServer.iml" filepath="$PROJECT_DIR$/CookwareHomeServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ext/fnv-java/fnv.iml" filepath="$PROJECT_DIR$/ext/fnv-java/fnv.iml" />
     </modules>
   </component>
 </project>

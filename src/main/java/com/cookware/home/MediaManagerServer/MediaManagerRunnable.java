@@ -40,7 +40,6 @@ public class MediaManagerRunnable implements Runnable{
 
     public MediaManagerRunnable(Config mConfig){
         config = mConfig;
-        // WILL: What is the difference for using the "this.blah" as oppose to "this"
         this.databaseManager = new DatabaseManager(config.databasePath);
         fileTransferrer = new FileTransferrer(databaseManager, config);
         downloadManager = new DownloadManager(databaseManager, config);
