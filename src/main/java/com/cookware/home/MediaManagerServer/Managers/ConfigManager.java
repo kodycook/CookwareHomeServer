@@ -30,6 +30,7 @@ public class ConfigManager {
             config.tempPath = properties.getProperty("tempMedia").replaceAll("\\s","");
             config.finalPath = properties.getProperty("finalMedia").replaceAll("\\s","");
             config.schedulerState = properties.getProperty("schedulerState").replaceAll("\\s","");
+            config.mediaSite = properties.getProperty("site").replaceAll("\\s","");
 
         } catch (IOException ex) {
             ex.printStackTrace();

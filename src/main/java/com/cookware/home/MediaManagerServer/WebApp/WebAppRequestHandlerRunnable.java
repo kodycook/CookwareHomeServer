@@ -1,5 +1,6 @@
 package com.cookware.home.MediaManagerServer.WebApp;
 
+import com.cookware.home.MediaManagerServer.DataTypes.Config;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -7,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -15,12 +15,21 @@ import java.util.*;
  */
 public class WebAppRequestHandlerRunnable implements Runnable {
     private final Logger log = Logger.getLogger(WebAppRequestHandlerRunnable.class);
-    private final WebAppScraper webAppScraper = new WebAppScraper();
-    private final String imageDirectory = "C:/Users/maste/Software/WebDev/MediaManagerServer/covers";
-    private final String imageLink = "http://images.primewire.ag/thumbs";
+    private final WebAppScraper webAppScraper;
     private final int port;
 
-    public WebAppRequestHandlerRunnable(){
+    public WebAppRequestHandlerRunnable(Config config){
+        if (config.mediaSite.equals("primewire")) {
+            webAppScraper =  new WebAppScraperPrimewire();
+        }
+        else if (config.mediaSite.equals("tornado")) {
+            webAppScraper = new WebAppScraperTornado();
+        }
+        else {
+            webAppScraper = null;
+            log.error("Media site in config is not recognised");
+            System.exit(1);
+        }
         port = 9001;
     }
 
@@ -45,6 +54,7 @@ public class WebAppRequestHandlerRunnable implements Runnable {
 
     public List<WebAppMediaItem> getMediaOptions(Map<String, Object> parameters) {
         String search = "";
+        String type = "";
         int page = 1;
 
         for (String key : parameters.keySet()) {
@@ -53,12 +63,16 @@ public class WebAppRequestHandlerRunnable implements Runnable {
                     return new ArrayList<>();
                 }
                 search = (String) parameters.get(key);
-            } else if (key.equals("page")) {
+            }
+            else if (key.equals("page")) {
                 page = Integer.parseInt((String) parameters.get(key));
+            }
+            else if (key.equals("type")) {
+                type = (String) parameters.get(key);
             }
             log.info(String.format("Received Media Request with attributes: %s", parameters.toString()));
         }
-        return webAppScraper.getMediaOptions(search, page);
+        return webAppScraper.getMediaOptions(search, type, page);
     }
 
     public class EchoGetHandler implements HttpHandler {
@@ -69,6 +83,7 @@ public class WebAppRequestHandlerRunnable implements Runnable {
             Map<String, Object> parameters = new HashMap<String, Object>();
             URI requestedUri = he.getRequestURI();
             String query = requestedUri.getRawQuery();
+
             String response;
             parseQuery(query, parameters);
 
@@ -76,13 +91,15 @@ public class WebAppRequestHandlerRunnable implements Runnable {
 
             if(mediaItems == null){
                 response = "ERROR";
+                log.error("Failed to return a successful response");
             }
             else if (mediaItems.isEmpty()){
                 response = "";
+                log.error("No movies found - check search entry");
             }
             else {
-                response = convertMediaOptionsToJson(mediaItems);
-                log.debug(response);
+                response = convertMediaOptionsToJson(mediaItems).replaceAll("[^\\p{ASCII}]", "?");;
+                log.debug(String.format("Sending Response: %s",response));
             }
 
             he.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
@@ -102,43 +119,27 @@ public class WebAppRequestHandlerRunnable implements Runnable {
             // parse request
             Map<String, Object> parameters = new HashMap<String, Object>();
             String imagePath = he.getRequestURI().toString();
+            if (imagePath.substring(0,7).equals("/image/")) {
+                imagePath = imagePath.substring(7);
+            }
 
-            int index = imagePath.lastIndexOf('/');
-            String imageName = imagePath.substring(index + 1);
-
-//            sendLocalImage(he, imageName);
-            sendRemoteImage(he, imageName);
+            sendRemoteImage(he, imagePath);
 
             he.close();
         }
     }
 
-
-    public void sendLocalImage(HttpExchange he, String imageName){
-        String path = imageDirectory + "/" + imageName;
-        File file = new File(path);
-
-        try {
-            if (file.exists()) {
-                he.sendResponseHeaders(200, file.length());
-
-                OutputStream outputStream = he.getResponseBody();
-                Files.copy(file.toPath(), outputStream);
-
-                outputStream.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public void sendRemoteImage(HttpExchange he, String imageName){
-        String link = imageLink + "/" + imageName;
+        String link = imageName;
         try {
             URL url = new URL(link);
 
-            URLConnection conn = url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.addRequestProperty("Accept-Charset", "UTF-8");
+            conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+            conn.addRequestProperty("User-Agent", "Mozilla");
+            conn.addRequestProperty("Referer", link);
+
             InputStream inputStream = conn.getInputStream();
             long size = Long.parseLong(conn.getHeaderFields().get("Content-Length").get(0));
 

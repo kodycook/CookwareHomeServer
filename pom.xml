@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.cookware.home.server</groupId>
   <artifactId>mediaMananger</artifactId>
-  <version>1.03-SNAPSHOT</version>
+  <version>1.04-SNAPSHOT</version>
   <name>Media Manager</name>
   <url>http://maven.apache.org</url>
 
@@ -16,6 +16,7 @@
   </properties>
 
   <build>
+    <finalName>Media Manager</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -37,7 +38,6 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
-          <finalName>Media Manager</finalName>
         </configuration>
         <executions>
           <execution>
@@ -53,7 +53,6 @@
       <artifactId>maven-resources-plugin</artifactId>
       <version>3.0.1</version>
       <executions>
-
         <execution>
           <id>copy-jar-to-test</id>
           <phase>install</phase>
@@ -219,6 +218,11 @@
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
       <version>3.20.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
     </dependency>
   </dependencies>
 </project>

@@ -57,9 +57,11 @@ public class FileTransferrerRunnable implements Runnable {
                                 transferMedia(currentMediaInfo);
                             }
                             else if (currentMediaInfo.STATE.equals(DownloadState.IGNORED)){
+                                log.debug(String.format("Media identified as ignored deleted: %s",currentMediaInfo.toString()));
                                 currentFile.delete();
                             }
                             else if (currentMediaInfo.STATE.equals(DownloadState.FAILED)){
+                                log.debug(String.format("Media identified as failed deleted: %s",currentMediaInfo.toString()));
                                 currentFile.delete();
                             }
                         }
