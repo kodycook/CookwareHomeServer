@@ -1,12 +1,12 @@
-package com.cookware.home.MediaManagerServer;
+package com.cookware.home.MediaManagerCore;
 
-import com.cookware.home.MediaManagerServer.DataTypes.Config;
-import com.cookware.home.MediaManagerServer.DataTypes.DownloadState;
-import com.cookware.home.MediaManagerServer.DataTypes.MediaInfo;
-import com.cookware.home.MediaManagerServer.DataTypes.MediaType;
-import com.cookware.home.MediaManagerServer.Managers.DatabaseManager;
+import com.cookware.home.MediaManagerCommon.DataTypes.Config;
+import com.cookware.home.MediaManagerCommon.DataTypes.DownloadState;
+import com.cookware.home.MediaManagerCommon.DataTypes.MediaInfo;
+import com.cookware.home.MediaManagerCommon.DataTypes.MediaType;
+import com.cookware.home.MediaManagerCommon.Managers.DatabaseManager;
 import com.cookware.common.Tools.DirectoryTools;
-import com.cookware.common.Tools.FileNameTools;
+import com.cookware.home.MediaManagerCommon.Tools.FileNameTools;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
@@ -76,7 +76,7 @@ public class FileTransferrerRunnable implements Runnable {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
-                log.error("MediaManagerServer thread interrupted", e);
+                log.error("MediaManagerCore thread interrupted", e);
                 System.exit(1);
             }
         }

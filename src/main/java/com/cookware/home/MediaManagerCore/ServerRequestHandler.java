@@ -1,4 +1,4 @@
-package com.cookware.home.MediaManagerServer;
+package com.cookware.home.MediaManagerCore;
 
 import org.apache.log4j.Logger;
 

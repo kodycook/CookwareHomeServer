@@ -1,4 +1,4 @@
-package com.cookware.home.MediaManagerServer;
+package com.cookware.home.MediaManagerCore;
 
 import com.cookware.common.Tools.CsvTools;
 import junit.framework.TestCase;

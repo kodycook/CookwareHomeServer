@@ -1,4 +1,4 @@
-package com.cookware.home.MediaManagerServer.ClientStub;
+package com.cookware.home.MediaManagerCore.ClientStub;
 
 import org.apache.log4j.Logger;
 

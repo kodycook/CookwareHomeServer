@@ -1,6 +1,6 @@
-package com.cookware.home.MediaManagerServer;
+package com.cookware.home.MediaManagerCore;
 
-import com.cookware.home.MediaManagerServer.DataTypes.Config;
+import com.cookware.home.MediaManagerCommon.DataTypes.Config;
 import org.apache.log4j.Logger;
 
 

@@ -4,3 +4,6 @@
 [submodule "ext/cookware-common"]
 	path = ext/cookware-common
 	url = https://github.com/kodycook/cookware-common.git
+[submodule "ext/media-manager-common"]
+	path = ext/media-manager-common
+	url = https://github.com/kodycook/media-manager-common.git

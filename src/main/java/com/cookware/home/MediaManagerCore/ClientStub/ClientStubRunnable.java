@@ -1,6 +1,6 @@
-package com.cookware.home.MediaManagerServer.ClientStub;
+package com.cookware.home.MediaManagerCore.ClientStub;
 
-import com.cookware.home.MediaManagerServer.DataTypes.AutomateLevel;
+import com.cookware.home.MediaManagerCommon.DataTypes.AutomateLevel;
 import com.cookware.common.Tools.WebTools;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;

@@ -29,7 +29,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.cookware.home.MediaManagerServer.Launcher</mainClass>
+              <mainClass>com.cookware.home.MediaManagerCore.Launcher</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
