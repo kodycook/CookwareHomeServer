@@ -2,7 +2,7 @@ package com.cookware.home.MediaManagerServer;
 
 import com.cookware.home.MediaManagerServer.DataTypes.MediaInfo;
 import com.cookware.home.MediaManagerServer.DataTypes.MediaType;
-import com.cookware.home.MediaManagerServer.Tools.FileNameTools;
+import com.cookware.common.Tools.FileNameTools;
 import junit.framework.TestCase;
 
 import java.math.BigInteger;

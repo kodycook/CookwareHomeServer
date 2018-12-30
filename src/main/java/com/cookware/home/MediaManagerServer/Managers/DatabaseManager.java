@@ -3,8 +3,8 @@ package com.cookware.home.MediaManagerServer.Managers;
 import com.cookware.home.MediaManagerServer.DataTypes.DownloadState;
 import com.cookware.home.MediaManagerServer.DataTypes.MediaInfo;
 import com.cookware.home.MediaManagerServer.DataTypes.MediaType;
-import com.cookware.home.MediaManagerServer.Tools.DirectoryTools;
-import com.cookware.home.MediaManagerServer.Tools.FileNameTools;
+import com.cookware.common.Tools.DirectoryTools;
+import com.cookware.common.Tools.FileNameTools;
 import org.apache.log4j.Logger;
 
 import java.math.BigInteger;

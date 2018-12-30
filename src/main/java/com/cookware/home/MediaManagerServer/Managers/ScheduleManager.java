@@ -1,7 +1,7 @@
 package com.cookware.home.MediaManagerServer.Managers;
 
 import com.cookware.home.MediaManagerServer.DataTypes.Config;
-import com.cookware.home.MediaManagerServer.Tools.CsvTools;
+import com.cookware.common.Tools.CsvTools;
 import org.apache.log4j.Logger;
 
 import java.time.LocalDateTime;

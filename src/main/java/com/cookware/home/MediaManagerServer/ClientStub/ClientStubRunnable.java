@@ -1,7 +1,7 @@
 package com.cookware.home.MediaManagerServer.ClientStub;
 
 import com.cookware.home.MediaManagerServer.DataTypes.AutomateLevel;
-import com.cookware.home.MediaManagerServer.Tools.WebTools;
+import com.cookware.common.Tools.WebTools;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.Logger;

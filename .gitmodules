@@ -1,6 +1,6 @@
 [submodule "ext/fnv-java"]
 	path = ext/fnv-java
 	url = https://github.com/jakedouglas/fnv-java.git
-[submodule "ext/CookwareCommon"]
-	path = ext/CookwareCommon
-	url = https://github.com/kodycook/CookwareCommon.git
+[submodule "ext/cookware-common"]
+	path = ext/cookware-common
+	url = https://github.com/kodycook/cookware-common.git
